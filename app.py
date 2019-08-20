@@ -1,7 +1,5 @@
-from flask import Flask
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from flask import request
-from flask import jsonify
 
 app = Flask('__name__')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
