@@ -32,15 +32,20 @@ class Citizen(db.Model):
         self.relatives = relatives
 
 
+def validate_data(data):
+    for (key, value) in data.items():
+        if not value:
+            return {'Error': f'`{key}` field is not specified'}
+    return None
+
+
 @app.route('/imports', methods=['POST'])
 def insert_citizens():
     for citizen_info in request.json['citizens']:
-        for (key, value) in citizen_info.items():
-            if not value:
-                error_message = {'Error': f'"{key}" field of citizen'
-                                          f' {citizen_info["citizen_id"]}'
-                                          f' is not specified'}
-                return jsonify(error_message), 400
+
+        error_message = validate_data(citizen_info)
+        if error_message:
+            return jsonify(error_message), 400
 
         citizen_id = citizen_info['citizen_id']
         town = citizen_info['town']
