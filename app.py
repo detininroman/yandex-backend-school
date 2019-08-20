@@ -34,7 +34,7 @@ class Citizen(db.Model):
 
 def validate_data(data):
     for (key, value) in data.items():
-        if not value:
+        if value is None:
             return {'Error': f'`{key}` field is not specified'}
     return None
 
