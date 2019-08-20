@@ -3,9 +3,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask import request
 from flask import jsonify
 
-app = Flask("__name__")
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SQLALCHEMY_DATABASE_URI"] = 'postgresql://roman:123456@localhost:9000/database01'
+app = Flask('__name__')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://roman:123456@localhost:9000/database01'
 db = SQLAlchemy(app)
 
 
