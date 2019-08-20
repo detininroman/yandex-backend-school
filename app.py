@@ -1,6 +1,7 @@
-from flask import Flask, Response
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask import request
+from flask import jsonify
 
 app = Flask("__name__")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -33,21 +34,28 @@ class Citizen(db.Model):
 
 @app.route('/imports', methods=['POST'])
 def insert_citizens():
-    citizen_id = request.form['citizen_id']
-    town = request.form['town']
-    street = request.form['street']
-    building = request.form['building']
-    apartment = request.form['apartment']
-    name = request.form['name']
-    birth_date = request.form['birth_date']
-    gender = request.form['gender']
-    relatives = request.form['relatives']
+    for citizen_info in request.json['citizens']:
+        for (key, value) in citizen_info.items():
+            if not value:
+                error_message = {'Error': f'"{key}" field of citizen'
+                                          f' {citizen_info["citizen_id"]}'
+                                          f' is not specified'}
+                return jsonify(error_message), 400
 
-    citizen = Citizen(citizen_id, town, street, building, apartment, name, birth_date, gender, relatives)
-    db.session.add(citizen)
-    db.session.commit()
-    return Response("{'a':'b'}", status=201)
+        citizen_id = citizen_info['citizen_id']
+        town = citizen_info['town']
+        street = citizen_info['street']
+        building = citizen_info['building']
+        apartment = citizen_info['apartment']
+        name = citizen_info['name']
+        birth_date = citizen_info['birth_date']
+        gender = citizen_info['gender']
+        relatives = citizen_info['relatives']
 
+        citizen = Citizen(citizen_id, town, street, building, apartment,
+                          name, birth_date, gender, relatives)
+        db.session.add(citizen)
+        db.session.commit()
 
-if __name__ == '__main__':
-    app.run()
+    data = {'data': {'import_id': 1}}
+    return jsonify(data), 201
