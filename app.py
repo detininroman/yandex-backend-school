@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 
 app = Flask('__name__')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -14,7 +15,7 @@ class Citizen(db.Model):
     building = db.Column(db.String(256), unique=False)
     apartment = db.Column(db.Integer, unique=False)
     name = db.Column(db.String(256), unique=False)
-    birth_date = db.Column(db.String(256), unique=False)
+    birth_date = db.Column(db.Date, unique=False)
     gender = db.Column(db.String(256), unique=False)
     relatives = db.Column(db.PickleType, unique=False)
 
@@ -51,7 +52,12 @@ def insert_citizens():
         building = citizen_info['building']
         apartment = citizen_info['apartment']
         name = citizen_info['name']
-        birth_date = citizen_info['birth_date']
+
+        birth_date = datetime.strptime(citizen_info['birth_date'], '%d.%m.%Y')
+        if birth_date >= datetime.now():
+            error_message = dict(error=f'Birth date `{birth_date}`  is not valid')
+            return jsonify(error_message), 400
+
         gender = citizen_info['gender']
         relatives = citizen_info['relatives']
 
