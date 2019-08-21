@@ -38,6 +38,12 @@ def validate_data(data):
     return None
 
 
+def validate_birth_date(birth_date):
+    if birth_date >= datetime.now():
+        return dict(error=f'Birth date `{birth_date}`  is not valid')
+    return None
+
+
 @app.route('/imports', methods=['POST'])
 def insert_citizens():
     for citizen_info in request.json['citizens']:
@@ -54,8 +60,8 @@ def insert_citizens():
         name = citizen_info['name']
 
         birth_date = datetime.strptime(citizen_info['birth_date'], '%d.%m.%Y')
-        if birth_date >= datetime.now():
-            error_message = dict(error=f'Birth date `{birth_date}`  is not valid')
+        error_message = validate_birth_date(birth_date)
+        if error_message:
             return jsonify(error_message), 400
 
         gender = citizen_info['gender']
