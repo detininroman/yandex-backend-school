@@ -17,7 +17,8 @@ class Citizen(db.Model):
     name = db.Column(db.String(256), unique=False)
     birth_date = db.Column(db.Date, unique=False)
     gender = db.Column(db.String(256), unique=False)
-    relatives = db.Column(db.PickleType, unique=False)
+    # TODO: change type of relatives field
+    relatives = db.Column(db.String, unique=False)
 
     def __init__(self, citizen_id, town, street, building, apartment, name, birth_date, gender, relatives):
         self.citizen_id = citizen_id
