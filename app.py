@@ -40,7 +40,7 @@ def validate_data(data):
 
 def validate_birth_date(birth_date):
     if birth_date >= datetime.now():
-        return dict(error=f'Birth date `{birth_date}`  is not valid')
+        return {'Error': f'Birth date `{birth_date}` is not valid'}
     return None
 
 
