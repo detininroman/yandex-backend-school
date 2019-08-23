@@ -2,9 +2,14 @@ import shelve
 
 from flask import Flask, g, request
 from flask_restful import Resource, Api
+from datetime import datetime
 
 app = Flask(__name__)
 api = Api(app)
+
+
+def debug(arg):
+    return print(arg, flush=True)
 
 
 def get_db():
@@ -30,6 +35,7 @@ class ImportList(Resource):
         imports = []
 
         for key in keys:
+            print(shelf[key])
             imports.append(shelf[key])
 
         return {'imports': imports}, 200
@@ -37,14 +43,39 @@ class ImportList(Resource):
     def post(self):
         data = request.get_json()
 
-        print(data, flush=True)
+        citizens = data['citizens']
+
+        identifiers = list()
+
+        for citizen in citizens:
+            identifiers.append(citizen['citizen_id'])
+            try:
+                birth_date = datetime.strptime(citizen['birth_date'], '%d.%m.%Y')
+                if birth_date >= datetime.now():
+                    return {'Error': f'Birth date `{birth_date}` is not valid'}, 400
+            except ValueError:
+                return {'Error': 'Date is not valid'}, 400
+
+        if not len(set(identifiers)) == len(identifiers):
+            return {'Error': 'Identifiers are not unique'}, 400
 
         shelf = get_db()
-        shelf[str(data['citizen_id'])] = data
 
-        import_id = 1
+        # FIXME:
+        keys = list(shelf.keys())
+        keysint = [int(i) for i in keys]
+        keysint.sort()
+        keys = [str(i) for i in keysint]
 
-        return {'data': {'import_id': import_id}}, 201
+        try:
+            import_id = dict(shelf[keys[-1]])['import_id'] + 1
+        except IndexError:
+            import_id = 1
+
+        data['import_id'] = import_id
+        shelf[str(import_id)] = data
+
+        return {'data': {'import_id': import_id}, 'tmp': data}, 201
 
 
 api.add_resource(ImportList, '/imports')
