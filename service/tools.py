@@ -5,6 +5,12 @@ def error(arg):
     return dict(error=arg)
 
 
+def calculate_age(born):
+    today = datetime.today()
+    return today.year - born.year - \
+           ((today.month, today.day) < (born.month, born.day))
+
+
 def contains_digit(string: str) -> bool:
     """Checks if string contains digits
 

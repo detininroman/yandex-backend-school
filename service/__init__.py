@@ -1,10 +1,10 @@
 import shelve
 from datetime import datetime
-
+import numpy as np
 from flask import Flask, g, request
 
 from service.tools import error, contains_digit, contains_letter, \
-    validate_payload, debug
+    validate_payload, debug, calculate_age
 
 app = Flask(__name__)
 
@@ -202,10 +202,33 @@ def get_statistics(import_id):
         citizens = [shelf[key]['citizens'] for key in list(shelf.keys())
                     if shelf[key]['import_id'] == import_id][0]
     except IndexError:
-        return error('not found'), 404
+        return error('import not found'), 404
 
+    # create list of all towns from import
     towns = list(set([citizen['town'] for citizen in citizens]))
+    # create dict for every town
+    data = [dict(town=town, ages=list()) for town in towns]
 
-    data = [dict(town=town, p50=1, p75=1, p99=1) for town in towns]
-    debug(data)
+    for citizen in citizens:
+        try:
+            birth_date = datetime.strptime(citizen['birth_date'], '%d.%m.%Y')
+            age = calculate_age(birth_date)
+        except ValueError:
+            return error('birth_date is not valid'), 400
+
+        # get dict for particular town
+        town_statistics = [item for item in data if
+                           item['town'] == citizen['town']][0]
+        index = data.index(town_statistics)
+        # add age
+        town_statistics['ages'].append(age)
+        # apply changes
+        data[index] = town_statistics
+
+    for town_statistics in data:
+        ages = np.array(town_statistics['ages'])
+        town_statistics['p50'] = np.percentile(ages, 50)
+        town_statistics['p75'] = np.percentile(ages, 75)
+        town_statistics['p99'] = np.percentile(ages, 99)
+
     return dict(data=data), 200
