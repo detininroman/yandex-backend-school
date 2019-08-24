@@ -3,7 +3,7 @@ import shelve
 from flask import Flask, g, request
 
 from service.tools import error, contains_digit, contains_letter, \
-    validate_payload as is_payload_invalid, debug, validate_payload_update
+    validate_payload, debug
 
 app = Flask(__name__)
 
@@ -46,8 +46,7 @@ def post_import() -> (dict, int):
     """
     data = request.get_json()
 
-    invalid_payload = is_payload_invalid(data['citizens'])
-
+    invalid_payload = validate_payload(data['citizens'])
     if invalid_payload:
         return invalid_payload
 
@@ -101,6 +100,8 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
     citizens = {}
     # outdated information about citizen
     citizen_info = {}
+    # fields that will be updated
+    fields_to_update = []
 
     # find import with citizens
     shelf = get_db()
@@ -111,12 +112,19 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
     # modify import with citizens
     for citizen in citizens:
         if citizen['citizen_id'] == citizen_id:
-            validate_payload_update(data)
-            if data.get('town'):
-                citizen['town'] = data['town']
-            if data.get('name'):
-                citizen['name'] = data['name']
+            if data.get('citizen_id'):
+                return error('citizen_id cannot be changed'), 400
+
+            for field in data.keys():
+                if data.get(field):
+                    fields_to_update.append(field)
+                    citizen[field] = data[field]
+
             citizen_info = citizen
+
+    invalid_payload = validate_payload(citizens, fields_to_update)
+    if invalid_payload:
+        return invalid_payload
 
     payload = {'citizens': citizens,
                'import_id': import_id}

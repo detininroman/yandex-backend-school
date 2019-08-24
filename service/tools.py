@@ -5,90 +5,81 @@ def error(arg):
     return {'error': arg}
 
 
-def contains_digit(string):
+def contains_digit(string: str) -> bool:
     return any(char.isdigit() for char in string)
 
 
-def contains_letter(string):
+def contains_letter(string: str) -> bool:
     return any(char.isalpha() for char in string)
 
 
-def validate_payload_update(citizen):
+def validate_payload_update(payload):
     pass
 
 
-def validate_payload(citizens):
-    identifiers = list()
-    for citizen in citizens:
+def validate_field(data: dict, field_name: str) -> (dict, int):
+    if field_name in ['town', 'street', 'building']:
+        if len(data[field_name]) >= 256:
+            return error(f'{field_name} name should not exceed'
+                         f' 256 characters'), 400
+        if not contains_digit(data[field_name]) and \
+                not contains_letter(data[field_name]):
+            return error(f'{field_name} name should contain at least'
+                         f' one letter or one digit'), 400
 
-        # check if all fields are present
-        if len(citizen.keys()) != 9:
-            return error('all fields must be filled'), 400
+    elif field_name in ['citizen_id', 'apartment']:
+        if data[field_name] < 0:
+            return error(f'{field_name} cannot be negative'), 400
 
-        # check if all fields are not empty
-        for (key, value) in citizen.items():
-            if value is None:
-                return error(f'{key} must be specified'), 400
+    elif field_name in ['name']:
+        if not len(data[field_name]) or len(data[field_name]) >= 256:
+            return error(f'{field_name} should not be empty and exceed'
+                         f' 256 characters'), 400
 
-        # validating citizen_id
-        identifiers.append(citizen['citizen_id'])
-        if citizen['citizen_id'] < 0:
-            return error('Citizen ID cannot be negative'), 400
-
-        # validating town
-        town = citizen['town']
-        if len(town) >= 256:
-            return error('Town name should not exceed 256 characters'), 400
-        if not contains_digit(town) and not contains_letter(town):
-            return error('Town name should contain at least one letter or one digit'), 400
-
-        # validating street
-        street = citizen['street']
-        if len(street) >= 256:
-            return error('Street name should not exceed 256 characters'), 400
-        if not contains_digit(street) and not contains_letter(street):
-            return error('Street name should contain at least one letter or one digit'), 400
-
-        # validating building
-        building = citizen['building']
-        if len(building) >= 256:
-            return error('Building name should not exceed 256 characters'), 400
-        if not contains_digit(building) and not contains_letter(building):
-            return error('Building name should contain at least one letter or one digit'), 400
-
-        # validating apartment
-        if citizen['apartment'] < 0:
-            return error('Apartment number cannot be negative'), 400
-
-        # validating name
-        name = citizen['name']
-        if not len(name) or len(name) >= 256:
-            return error('Name should not be empty and exceed 256 characters'), 400
-
-        # validating birth_date
-        try:
-            birth_date = datetime.strptime(citizen['birth_date'], '%d.%m.%Y')
-            if birth_date >= datetime.now():
-                return error(f'Birth date `{birth_date}` is not valid'), 400
-        except ValueError:
-            return error('Birth date is not valid'), 400
-
-        # validating gender
-        if citizen['gender'] not in ['male', 'female']:
+    elif field_name in ['gender']:
+        if data[field_name] not in ['male', 'female']:
             return error('Invalid gender'), 400
 
-        # validating relatives
-        if not isinstance(citizen['relatives'], list):
-            return error('Relatives field must be list'), 400
+    elif field_name in ['birth_date']:
+        try:
+            birth_date = datetime.strptime(data[field_name], '%d.%m.%Y')
+            if birth_date >= datetime.now():
+                return error(f'{field_name} `{birth_date}` is not valid'), 400
+        except ValueError:
+            return error(f'{field_name} is not valid'), 400
 
-        for relative in citizen['relatives']:
+    elif field_name in ['relatives']:
+        if not isinstance(data[field_name], list):
+            return error(f'{field_name} field must be list'), 400
+        for relative in data[field_name]:
             if not isinstance(relative, int):
-                return error('Relative must be int'), 400
+                return error(f'{field_name} must contain ints'), 400
+    return
 
-    # validate uniqueness
+
+def validate_payload(citizens, fields_to_check=None):
+    all_fields = ['citizen_id', 'building', 'street', 'town',
+                  'gender', 'birth_date', 'name', 'apartment', 'relatives']
+    fields_to_check = fields_to_check or all_fields
+
+    # validate ID uniqueness
+    identifiers = [item['citizen_id'] for item in citizens]
     if not len(set(identifiers)) == len(identifiers):
         return error('Identifiers are not unique'), 400
 
+    for citizen in citizens:
+        # check if all fields exist and not empty
+        for field_name in fields_to_check:
+            if field_name not in citizen.keys():
+                return error(f'{field_name} must be specified'), 400
+            if not citizen.get(field_name) and field_name != 'relatives':
+                return error(f'{field_name} must be specified'), 400
+
+        # check if all fields meet conditions
+        for field_name in fields_to_check:
+            is_field_invalid = validate_field(citizen, field_name)
+            if is_field_invalid:
+                return is_field_invalid
     return
 
 
