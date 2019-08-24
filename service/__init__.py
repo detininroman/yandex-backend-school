@@ -35,7 +35,7 @@ def get_all_imports() -> (dict, int):
     for key in keys:
         imports.append(shelf[key])
 
-    return {'imports': imports}, 200
+    return dict(imports=imports), 200
 
 
 @app.route('/imports', methods=['POST'])
@@ -66,7 +66,7 @@ def post_import() -> (dict, int):
     data['import_id'] = import_id
     shelf[str(import_id)] = data
 
-    return {'data': {'import_id': import_id}}, 201
+    return dict(data=dict(import_id=import_id)), 201
 
 
 @app.route('/import/<int:import_id>/citizens', methods=['GET'])
@@ -81,7 +81,7 @@ def get_import_citizens(import_id: int) -> (dict, int):
 
     for key in keys:
         if shelf[key]['import_id'] == import_id:
-            return {'data': shelf[key]['citizens']}, 200
+            return dict(data=shelf[key]['citizens']), 200
 
     return error('not found'), 404
 
@@ -98,8 +98,6 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
 
     # outdated information about all import
     citizens = {}
-    # outdated information about citizen
-    citizen_info = {}
     # fields that will be updated
     fields_to_update = []
 
@@ -109,26 +107,53 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
         if shelf[key]['import_id'] == import_id:
             citizens = shelf[key]['citizens']
 
+    new_relatives, old_relatives = [], []
+
+    # find citizen and its index
+    citizen = [citizen for citizen in citizens if citizen['citizen_id'] == citizen_id][0]
+    index = citizens.index(citizen)
+
+    # forbid citizen_id changing
+    if data.get('citizen_id'):
+        return error('citizen_id cannot be changed'), 400
+
+    for field in data.keys():
+        # if relatives are changed
+        if isinstance(data.get('relatives'), list):
+            old_relatives = citizen['relatives']
+            new_relatives = data['relatives']
+
+        # change fields mentioned in data
+        if data.get(field):
+            fields_to_update.append(field)
+            citizen[field] = data[field]
+
     # modify import with citizens
-    for citizen in citizens:
-        if citizen['citizen_id'] == citizen_id:
-            if data.get('citizen_id'):
-                return error('citizen_id cannot be changed'), 400
 
-            for field in data.keys():
-                if data.get(field):
-                    fields_to_update.append(field)
-                    citizen[field] = data[field]
+    # modify relatives
+    # all_relatives = list(set(old_relatives + new_relatives))
+    # debug(type(citizens))
 
-            citizen_info = citizen
+    # for re
+    # for relative in all_relatives:
+    #     for citizen in citizens:
+    #         if citizen['citizen_id'] in all_relatives:
+    #             if citizen['citizen_id'] in new_relatives and citizen['citizen_id'] in old_relatives:
+    #                 debug('relative was not changed')
+    #             if citizen['citizen_id'] in new_relatives and citizen['citizen_id'] not in old_relatives:
+    #                 debug(f'relative {citizen["citizen_id"]} was added')
+    #             if citizen['citizen_id'] in old_relatives and citizen['citizen_id'] not in new_relatives:
+    #                 debug(f'relative {citizen["citizen_id"]} was deleted')
+
+    citizens[index] = citizen
 
     invalid_payload = validate_payload(citizens, fields_to_update)
     if invalid_payload:
         return invalid_payload
 
-    payload = {'citizens': citizens,
-               'import_id': import_id}
+    shelf[str(import_id)] = dict(
+        citizens=citizens,
+        import_id=import_id
+    )
 
-    shelf[str(import_id)] = payload
-
-    return {'data': citizen_info}, 200
+    return dict(data=citizen), 200

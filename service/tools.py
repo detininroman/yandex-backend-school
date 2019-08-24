@@ -79,9 +79,15 @@ def validate_payload(citizens, fields_to_check=None):
 
     for citizen in citizens:
         # check if all fields exist and not empty
+
+        # if citizen is created
+        if 'citizen_id' in fields_to_check:
+            if len(fields_to_check) != len(all_fields):
+                return error(f'all fields must be filled'), 400
+
         for field_name in fields_to_check:
             if field_name not in citizen.keys():
-                return error(f'{field_name} must be specified'), 400
+                return error(f'{field_name} is unknown field'), 400
             if not citizen.get(field_name) and field_name != 'relatives':
                 return error(f'{field_name} must be specified'), 400
 
