@@ -76,11 +76,29 @@ def get_import_citizens(import_id):
 
 @app.route('/imports/<int:import_id>/citizens/<int:citizen_id>', methods=['PATCH'])
 def update_citizen(import_id, citizen_id):
+    data = request.get_json()
+
+    # outdated information about import
+    import_info = {}
+    # outdated information about citizen
+    citizen_info = {}
+
     shelf = get_db()
-    keys = list(shelf.keys())
-
-    for key in keys:
+    for key in list(shelf.keys()):
         if shelf[key]['import_id'] == import_id:
-            return {'data': shelf[key]['citizens']}, 200
+            import_info = shelf[key]['citizens']
+            for citizen in import_info:
+                if citizen['citizen_id'] == citizen_id:
+                    citizen_info = citizen
 
-    return error('not found'), 404
+    citizen_info['town'] = data['town']
+    for citizen in import_info:
+        if citizen['citizen_id'] == citizen_id:
+            citizen['town'] = citizen_info['town']
+
+    payload = {'citizens': import_info,
+               'import_id': import_id}
+
+    shelf[str(import_id)] = payload
+
+    return {'data': citizen_info}, 200
