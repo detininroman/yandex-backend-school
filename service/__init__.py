@@ -204,8 +204,7 @@ def get_statistics(import_id):
     except IndexError:
         return error('not found'), 404
 
-    # will be removed
-    towns = ['msk', 'spb']
+    towns = list(set([citizen['town'] for citizen in citizens]))
 
     data = [dict(town=town, p50=1, p75=1, p99=1) for town in towns]
     debug(data)
