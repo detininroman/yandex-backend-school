@@ -123,8 +123,6 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
 
         # if other fields are changed
         if data.get(field) is not None:
-            debug(field)
-            debug('here1')
             fields_to_update.append(field)
             citizen[field] = data[field]
 
@@ -136,14 +134,14 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
             pass
         elif relative in new_relatives and relative not in old_relatives:
             rel = [item for item in citizens if item['citizen_id'] == relative][0]
-            index1 = citizens.index(rel)
+            index = citizens.index(rel)
             rel['relatives'].append(citizen_id)
-            citizens[index1] = rel
+            citizens[index] = rel
         elif relative in old_relatives and relative not in new_relatives:
             rel = [item for item in citizens if item['citizen_id'] == relative][0]
-            index2 = citizens.index(rel)
+            index = citizens.index(rel)
             rel['relatives'].remove(citizen_id)
-            citizens[index2] = rel
+            citizens[index] = rel
 
     invalid_payload = validate_payload(citizens, fields_to_update)
     if invalid_payload:
