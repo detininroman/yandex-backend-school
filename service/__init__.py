@@ -99,11 +99,11 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
 
     shelf = get_db()
 
-    # information about all import to update
+    # information about all citizens in  import to update
     citizens = [shelf[key]['citizens'] for key in list(shelf.keys())
                 if shelf[key]['import_id'] == import_id][0]
 
-    # find citizen and its index
+    # find particular citizen and its index
     citizen = [citizen for citizen in citizens
                if citizen['citizen_id'] == citizen_id][0]
     index = citizens.index(citizen)
@@ -128,6 +128,7 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
             fields_to_update.append(field)
             citizen[field] = data[field]
 
+    # apply changes to citizen
     citizens[index] = citizen
 
     # modify relatives
