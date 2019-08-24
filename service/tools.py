@@ -23,10 +23,6 @@ def contains_letter(string: str) -> bool:
     return any(char.isalpha() for char in string)
 
 
-def validate_payload_update(payload):
-    pass
-
-
 def validate_field(data: dict, field_name: str) -> (dict, int):
     # validate types
     if field_name in ['town', 'street', 'building', 'name', 'birth_date', 'gender']:
