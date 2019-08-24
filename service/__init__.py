@@ -190,3 +190,23 @@ def get_birthdays(import_id):
                 months[birthday.month].append(giver)
 
     return dict(data=months), 200
+
+
+@app.route(
+    '/imports/<int:import_id>/towns/stat/percentile/age', methods=['GET'])
+def get_statistics(import_id):
+    shelf = get_db()
+
+    # getting list of citizens for particular import
+    try:
+        citizens = [shelf[key]['citizens'] for key in list(shelf.keys())
+                    if shelf[key]['import_id'] == import_id][0]
+    except IndexError:
+        return error('not found'), 404
+
+    # will be removed
+    towns = ['msk', 'spb']
+
+    data = [dict(town=town, p50=1, p75=1, p99=1) for town in towns]
+    debug(data)
+    return dict(data=data), 200
