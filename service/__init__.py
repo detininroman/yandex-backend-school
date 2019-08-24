@@ -117,7 +117,8 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
 
     for field in data.keys():
         # if relatives are changed
-        if data.get('relatives') is not None and isinstance(data.get('relatives'), list):
+        if data.get('relatives') is not None and \
+                isinstance(data.get('relatives'), list):
             old_relatives = citizen['relatives']
             new_relatives = data['relatives']
 
