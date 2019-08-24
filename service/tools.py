@@ -6,10 +6,20 @@ def error(arg):
 
 
 def contains_digit(string: str) -> bool:
+    """Checks if string contains digits
+
+    :param string: string to check
+    :return: True if contains, False otherwise
+    """
     return any(char.isdigit() for char in string)
 
 
 def contains_letter(string: str) -> bool:
+    """Checks if string contains letters
+
+    :param string: string to check
+    :return: True if contains, False otherwise
+    """
     return any(char.isalpha() for char in string)
 
 
