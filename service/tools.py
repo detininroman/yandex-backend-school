@@ -2,7 +2,7 @@ from datetime import datetime
 
 
 def error(arg):
-    return {'error': arg}
+    return dict(error=arg)
 
 
 def contains_digit(string: str) -> bool:
@@ -106,6 +106,14 @@ def validate_payload(citizens, fields_to_check=None):
             is_field_invalid = validate_field(citizen, field_name)
             if is_field_invalid:
                 return is_field_invalid
+
+        # validate relatives
+        for relative_id in citizen['relatives']:
+            relative = [item for item in citizens if
+                        item['citizen_id'] == relative_id][0]
+            if citizen['citizen_id'] not in relative['relatives']:
+                return error('invalid relatives'), 400
+
     return
 
 
