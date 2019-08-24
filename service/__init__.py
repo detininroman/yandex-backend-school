@@ -29,12 +29,8 @@ def get_all_imports() -> (dict, int):
     :return: imports and status code.
     """
     shelf = get_db()
-    keys = list(shelf.keys())
 
-    imports = []
-    for key in keys:
-        imports.append(shelf[key])
-
+    imports = [shelf[key] for key in list(shelf.keys())]
     return dict(imports=imports), 200
 
 
@@ -77,13 +73,13 @@ def get_import_citizens(import_id: int) -> (dict, int):
     :return: list of citizens and status code.
     """
     shelf = get_db()
-    keys = list(shelf.keys())
 
-    for key in keys:
-        if shelf[key]['import_id'] == import_id:
-            return dict(data=shelf[key]['citizens']), 200
-
-    return error('not found'), 404
+    try:
+        citizens = [shelf[key]['citizens'] for key in list(shelf.keys())
+                    if shelf[key]['import_id'] == import_id][0]
+        return dict(data=citizens)
+    except IndexError:
+        return error('not found'), 404
 
 
 @app.route(
@@ -158,3 +154,23 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
     )
 
     return dict(data=citizen), 200
+
+
+@app.route('/imports/<int:import_id>/citizens/birthdays', methods=['GET'])
+def get_birthdays(import_id):
+    shelf = get_db()
+
+    citizens = None
+
+    try:
+        citizens = [shelf[key]['citizens'] for key in list(shelf.keys())
+                    if shelf[key]['import_id'] == import_id][0]
+    except IndexError:
+        return error('not found'), 404
+
+    months = dict()
+    for i in range(1, 12 + 1):
+        months[i] = {}
+
+    ret_data = dict(data=months)
+    return ret_data, 200
