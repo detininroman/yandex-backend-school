@@ -86,7 +86,8 @@ def get_import_citizens(import_id: int) -> (dict, int):
     return error('not found'), 404
 
 
-@app.route('/imports/<int:import_id>/citizens/<int:citizen_id>', methods=['PATCH'])
+@app.route(
+    '/imports/<int:import_id>/citizens/<int:citizen_id>', methods=['PATCH'])
 def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
     """Updates citizen information.
 
@@ -134,12 +135,14 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
         if relative in new_relatives and relative in old_relatives:
             pass
         elif relative in new_relatives and relative not in old_relatives:
-            rel = [item for item in citizens if item['citizen_id'] == relative][0]
+            rel = [item for item in citizens
+                   if item['citizen_id'] == relative][0]
             index = citizens.index(rel)
             rel['relatives'].append(citizen_id)
             citizens[index] = rel
         elif relative in old_relatives and relative not in new_relatives:
-            rel = [item for item in citizens if item['citizen_id'] == relative][0]
+            rel = [item for item in citizens
+                   if item['citizen_id'] == relative][0]
             index = citizens.index(rel)
             rel['relatives'].remove(citizen_id)
             citizens[index] = rel
