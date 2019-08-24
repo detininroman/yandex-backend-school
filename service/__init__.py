@@ -231,4 +231,8 @@ def get_statistics(import_id):
         town_statistics['p75'] = np.percentile(ages, 75)
         town_statistics['p99'] = np.percentile(ages, 99)
 
+    # clean data
+    for item in data:
+        item.pop('ages')
+
     return dict(data=data), 200
