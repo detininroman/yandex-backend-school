@@ -1,4 +1,5 @@
 import shelve
+from datetime import datetime
 
 from flask import Flask, g, request
 
@@ -160,17 +161,32 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
 def get_birthdays(import_id):
     shelf = get_db()
 
-    citizens = None
-
+    # getting list of citizens for particular import
     try:
         citizens = [shelf[key]['citizens'] for key in list(shelf.keys())
                     if shelf[key]['import_id'] == import_id][0]
     except IndexError:
         return error('not found'), 404
 
-    months = dict()
-    for i in range(1, 12 + 1):
-        months[i] = {}
+    # create dictionary for output
+    months = {key: list() for key in range(1, 12 + 1)}
 
-    ret_data = dict(data=months)
-    return ret_data, 200
+    for citizen in citizens:
+        for relative in citizen['relatives']:
+            # person who receives the gift
+            recipient = [item for item in citizens if
+                         item['citizen_id'] == relative][0]
+            birthday = datetime.strptime(recipient['birth_date'], '%d.%m.%Y')
+            # person who gives a gift
+            try:
+                # if dict for a particular giver already exists
+                giver = [item for item in months[birthday.month] if
+                         item['citizen_id'] == citizen['citizen_id']][0]
+                giver['presents'] += 1
+            except IndexError:
+                # create dict for a particular giver
+                giver = dict(citizen_id=citizen['citizen_id'],
+                             presents=1)
+                months[birthday.month].append(giver)
+
+    return dict(data=months), 200
