@@ -28,6 +28,21 @@ def validate_payload_update(payload):
 
 
 def validate_field(data: dict, field_name: str) -> (dict, int):
+    # validate types
+    if field_name in ['town', 'street', 'building', 'name', 'birth_date', 'gender']:
+        if not isinstance(data[field_name], str):
+            return error(f'{field_name} name must be string')
+    elif field_name in ['citizen_id', 'apartment']:
+        if not isinstance(data[field_name], int):
+            return error(f'{field_name} name must be int')
+    elif field_name in ['relatives']:
+        if not isinstance(data[field_name], list):
+            return error(f'{field_name} field must be list'), 400
+        for relative in data[field_name]:
+            if not isinstance(relative, int):
+                return error(f'{field_name} must contain ints'), 400
+
+    # validate values
     if field_name in ['town', 'street', 'building']:
         if len(data[field_name]) >= 256:
             return error(f'{field_name} name should not exceed'
@@ -58,12 +73,6 @@ def validate_field(data: dict, field_name: str) -> (dict, int):
         except ValueError:
             return error(f'{field_name} is not valid'), 400
 
-    elif field_name in ['relatives']:
-        if not isinstance(data[field_name], list):
-            return error(f'{field_name} field must be list'), 400
-        for relative in data[field_name]:
-            if not isinstance(relative, int):
-                return error(f'{field_name} must contain ints'), 400
     return
 
 
