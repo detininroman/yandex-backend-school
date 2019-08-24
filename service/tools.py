@@ -35,21 +35,21 @@ def validate_payload(citizens):
         town = citizen['town']
         if len(town) >= 256:
             return error('Town name should not exceed 256 characters'), 400
-        if not (contains_digit(town) or contains_letter(town)):
+        if not contains_digit(town) and not contains_letter(town):
             return error('Town name should contain at least one letter or one digit'), 400
 
         # validating street
         street = citizen['street']
         if len(street) >= 256:
             return error('Street name should not exceed 256 characters'), 400
-        if not (contains_digit(street) or contains_letter(street)):
+        if not contains_digit(street) and not contains_letter(street):
             return error('Street name should contain at least one letter or one digit'), 400
 
         # validating building
         building = citizen['building']
         if len(building) >= 256:
             return error('Building name should not exceed 256 characters'), 400
-        if not (contains_digit(street) or contains_letter(street)):
+        if not contains_digit(building) and not contains_letter(building):
             return error('Building name should contain at least one letter or one digit'), 400
 
         # validating apartment
