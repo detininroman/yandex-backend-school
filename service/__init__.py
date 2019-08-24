@@ -96,56 +96,54 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
     """
     data = request.get_json()
 
-    # outdated information about all import
-    citizens = {}
-    # fields that will be updated
-    fields_to_update = []
-
-    # find import with citizens
     shelf = get_db()
-    for key in list(shelf.keys()):
-        if shelf[key]['import_id'] == import_id:
-            citizens = shelf[key]['citizens']
 
-    new_relatives, old_relatives = [], []
+    # information about all import to update
+    citizens = [shelf[key]['citizens'] for key in list(shelf.keys())
+                if shelf[key]['import_id'] == import_id][0]
 
     # find citizen and its index
-    citizen = [citizen for citizen in citizens if citizen['citizen_id'] == citizen_id][0]
+    citizen = [citizen for citizen in citizens
+               if citizen['citizen_id'] == citizen_id][0]
     index = citizens.index(citizen)
 
     # forbid citizen_id changing
     if data.get('citizen_id'):
         return error('citizen_id cannot be changed'), 400
 
+    # fields that will be updated
+    fields_to_update = list()
+    new_relatives, old_relatives = list(), list()
+
     for field in data.keys():
         # if relatives are changed
-        if isinstance(data.get('relatives'), list):
+        if data.get('relatives') is not None and isinstance(data.get('relatives'), list):
             old_relatives = citizen['relatives']
             new_relatives = data['relatives']
 
-        # change fields mentioned in data
-        if data.get(field):
+        # if other fields are changed
+        if data.get(field) is not None:
+            debug(field)
+            debug('here1')
             fields_to_update.append(field)
             citizen[field] = data[field]
 
-    # modify import with citizens
+    citizens[index] = citizen
 
     # modify relatives
-    # all_relatives = list(set(old_relatives + new_relatives))
-    # debug(type(citizens))
-
-    # for re
-    # for relative in all_relatives:
-    #     for citizen in citizens:
-    #         if citizen['citizen_id'] in all_relatives:
-    #             if citizen['citizen_id'] in new_relatives and citizen['citizen_id'] in old_relatives:
-    #                 debug('relative was not changed')
-    #             if citizen['citizen_id'] in new_relatives and citizen['citizen_id'] not in old_relatives:
-    #                 debug(f'relative {citizen["citizen_id"]} was added')
-    #             if citizen['citizen_id'] in old_relatives and citizen['citizen_id'] not in new_relatives:
-    #                 debug(f'relative {citizen["citizen_id"]} was deleted')
-
-    citizens[index] = citizen
+    for relative in list(set(old_relatives + new_relatives)):
+        if relative in new_relatives and relative in old_relatives:
+            pass
+        elif relative in new_relatives and relative not in old_relatives:
+            rel = [item for item in citizens if item['citizen_id'] == relative][0]
+            index1 = citizens.index(rel)
+            rel['relatives'].append(citizen_id)
+            citizens[index1] = rel
+        elif relative in old_relatives and relative not in new_relatives:
+            rel = [item for item in citizens if item['citizen_id'] == relative][0]
+            index2 = citizens.index(rel)
+            rel['relatives'].remove(citizen_id)
+            citizens[index2] = rel
 
     invalid_payload = validate_payload(citizens, fields_to_update)
     if invalid_payload:
