@@ -3,7 +3,7 @@ import shelve
 from flask import Flask, g, request
 
 from service.tools import error, contains_digit, contains_letter, \
-    validate_payload as is_payload_invalid, debug
+    validate_payload as is_payload_invalid, debug, validate_payload_update
 
 app = Flask(__name__)
 
@@ -23,7 +23,11 @@ def teardown_db(exception):
 
 
 @app.route('/imports', methods=['GET'])
-def get_all_imports():
+def get_all_imports() -> (dict, int):
+    """Gets all imports.
+
+    :return: imports and status code.
+    """
     shelf = get_db()
     keys = list(shelf.keys())
 
@@ -35,7 +39,11 @@ def get_all_imports():
 
 
 @app.route('/imports', methods=['POST'])
-def post_import():
+def post_import() -> (dict, int):
+    """Creates a new import.
+
+    :return: import identifier and status code
+    """
     data = request.get_json()
 
     invalid_payload = is_payload_invalid(data['citizens'])
@@ -63,7 +71,12 @@ def post_import():
 
 
 @app.route('/import/<int:import_id>/citizens', methods=['GET'])
-def get_import_citizens(import_id):
+def get_import_citizens(import_id: int) -> (dict, int):
+    """Gets list of citizens for particular import.
+
+    :param import_id: the ID of import.
+    :return: list of citizens and status code.
+    """
     shelf = get_db()
     keys = list(shelf.keys())
 
@@ -75,28 +88,37 @@ def get_import_citizens(import_id):
 
 
 @app.route('/imports/<int:import_id>/citizens/<int:citizen_id>', methods=['PATCH'])
-def update_citizen(import_id, citizen_id):
+def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
+    """Updates citizen information.
+
+    :param import_id: the ID of import.
+    :param citizen_id: the ID of citizen.
+    :return: updated information and status code.
+    """
     data = request.get_json()
 
-    # outdated information about import
-    import_info = {}
+    # outdated information about all import
+    citizens = {}
     # outdated information about citizen
     citizen_info = {}
 
+    # find import with citizens
     shelf = get_db()
     for key in list(shelf.keys()):
         if shelf[key]['import_id'] == import_id:
-            import_info = shelf[key]['citizens']
-            for citizen in import_info:
-                if citizen['citizen_id'] == citizen_id:
-                    citizen_info = citizen
+            citizens = shelf[key]['citizens']
 
-    citizen_info['town'] = data['town']
-    for citizen in import_info:
+    # modify import with citizens
+    for citizen in citizens:
         if citizen['citizen_id'] == citizen_id:
-            citizen['town'] = citizen_info['town']
+            validate_payload_update(data)
+            if data.get('town'):
+                citizen['town'] = data['town']
+            if data.get('name'):
+                citizen['name'] = data['name']
+            citizen_info = citizen
 
-    payload = {'citizens': import_info,
+    payload = {'citizens': citizens,
                'import_id': import_id}
 
     shelf[str(import_id)] = payload

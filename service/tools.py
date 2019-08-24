@@ -13,6 +13,10 @@ def contains_letter(string):
     return any(char.isalpha() for char in string)
 
 
+def validate_payload_update(citizen):
+    pass
+
+
 def validate_payload(citizens):
     identifiers = list()
     for citizen in citizens:
