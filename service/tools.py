@@ -25,12 +25,15 @@ def contains_letter(string: str) -> bool:
 
 def validate_field(data: dict, field_name: str) -> (dict, int):
     # validate types
-    if field_name in ['town', 'street', 'building', 'name', 'birth_date', 'gender']:
+    if field_name in ['town', 'street', 'building',
+                      'name', 'birth_date', 'gender']:
         if not isinstance(data[field_name], str):
             return error(f'{field_name} name must be string')
+
     elif field_name in ['citizen_id', 'apartment']:
         if not isinstance(data[field_name], int):
             return error(f'{field_name} name must be int')
+
     elif field_name in ['relatives']:
         if not isinstance(data[field_name], list):
             return error(f'{field_name} field must be list'), 400
@@ -75,6 +78,7 @@ def validate_field(data: dict, field_name: str) -> (dict, int):
 def validate_payload(citizens, fields_to_check=None):
     all_fields = ['citizen_id', 'building', 'street', 'town',
                   'gender', 'birth_date', 'name', 'apartment', 'relatives']
+    # validate only needed fields while updating citizen's info
     fields_to_check = fields_to_check or all_fields
 
     # validate ID uniqueness
@@ -83,20 +87,21 @@ def validate_payload(citizens, fields_to_check=None):
         return error('Identifiers are not unique'), 400
 
     for citizen in citizens:
-        # check if all fields exist and not empty
-
-        # if citizen is created
+        # while citizen creating (not updating)
+        # check if all fields exist in payload
         if 'citizen_id' in fields_to_check:
             if len(fields_to_check) != len(all_fields):
                 return error(f'all fields must be filled'), 400
 
         for field_name in fields_to_check:
+            # check if field name is correct
             if field_name not in citizen.keys():
                 return error(f'{field_name} is unknown field'), 400
+            # check if values are not empty
             if not citizen.get(field_name) and field_name != 'relatives':
                 return error(f'{field_name} must be specified'), 400
 
-        # check if all fields meet conditions
+        # check if all fields meet specific conditions
         for field_name in fields_to_check:
             is_field_invalid = validate_field(citizen, field_name)
             if is_field_invalid:
