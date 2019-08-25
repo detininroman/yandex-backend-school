@@ -37,7 +37,7 @@ def get_all_imports() -> (dict, int):
 
 # Task 1
 @app.route('/imports', methods=['POST'])
-def post_import() -> (dict, int):
+def create_import() -> (dict, int):
     """Creates a new import.
 
     :return: import identifier and status code
@@ -53,7 +53,6 @@ def post_import() -> (dict, int):
     shelf = get_db()
 
     import_id = tools.get_import_id(shelf)
-
     data['import_id'] = import_id
     shelf[str(import_id)] = data
 
@@ -95,7 +94,6 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
     if data.get('citizen_id'):
         return error('citizen_id cannot be changed'), 400
 
-    # fields that will be updated
     fields_to_update = list()
     new_relatives, old_relatives = list(), list()
 
@@ -106,7 +104,6 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
             old_relatives = citizen['relatives']
             new_relatives = data['relatives']
 
-        # if other fields are changed
         if data.get(field) is not None:
             fields_to_update.append(field)
             citizen[field] = data[field]
@@ -119,17 +116,17 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
         if relative in new_relatives and relative in old_relatives:
             pass
         elif relative in new_relatives and relative not in old_relatives:
-            rel = [item for item in citizens
-                   if item['citizen_id'] == relative][0]
-            index = citizens.index(rel)
-            rel['relatives'].append(citizen_id)
-            citizens[index] = rel
+            new_relative = [item for item in citizens
+                            if item['citizen_id'] == relative][0]
+            index = citizens.index(new_relative)
+            new_relative['relatives'].append(citizen_id)
+            citizens[index] = new_relative
         elif relative in old_relatives and relative not in new_relatives:
-            rel = [item for item in citizens
-                   if item['citizen_id'] == relative][0]
-            index = citizens.index(rel)
-            rel['relatives'].remove(citizen_id)
-            citizens[index] = rel
+            old_relative = [item for item in citizens
+                            if item['citizen_id'] == relative][0]
+            index = citizens.index(old_relative)
+            old_relative['relatives'].remove(citizen_id)
+            citizens[index] = old_relative
 
     invalid_payload = tools.validate_payload(citizens, fields_to_update)
     if invalid_payload:
@@ -145,7 +142,7 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
 
 # Task 3
 @app.route('/import/<int:import_id>/citizens', methods=['GET'])
-def get_import_citizens(import_id: int) -> (dict, int):
+def get_citizens(import_id: int) -> (dict, int):
     """Gets list of citizens for particular import.
 
     :param import_id: the ID of import.
@@ -158,7 +155,7 @@ def get_import_citizens(import_id: int) -> (dict, int):
                     if shelf[key]['import_id'] == import_id][0]
         return dict(data=citizens)
     except IndexError:
-        return error('not found'), 404
+        return error('import not found'), 404
 
 
 # Task 4
@@ -166,7 +163,7 @@ def get_import_citizens(import_id: int) -> (dict, int):
 def get_birthdays(import_id):
     shelf = get_db()
 
-    # getting list of citizens for particular import
+    # get list of citizens for particular import
     try:
         citizens = [shelf[key]['citizens'] for key in list(shelf.keys())
                     if shelf[key]['import_id'] == import_id][0]
@@ -178,11 +175,11 @@ def get_birthdays(import_id):
 
     for citizen in citizens:
         for relative in citizen['relatives']:
-            # person who receives the gift
+            # recipient is person who receives the gift
             recipient = [item for item in citizens if
                          item['citizen_id'] == relative][0]
             birthday = datetime.strptime(recipient['birth_date'], '%d.%m.%Y')
-            # person who gives a gift
+            # giver is person who gives a gift
             try:
                 # if dict for a particular giver already exists
                 giver = [item for item in months[birthday.month] if
@@ -190,8 +187,7 @@ def get_birthdays(import_id):
                 giver['presents'] += 1
             except IndexError:
                 # create dict for a particular giver
-                giver = dict(citizen_id=citizen['citizen_id'],
-                             presents=1)
+                giver = dict(citizen_id=citizen['citizen_id'], presents=1)
                 months[birthday.month].append(giver)
 
     return dict(data=months), 200
@@ -203,7 +199,7 @@ def get_birthdays(import_id):
 def get_statistics(import_id):
     shelf = get_db()
 
-    # getting list of citizens for particular import
+    # get list of citizens for particular import
     try:
         citizens = [shelf[key]['citizens'] for key in list(shelf.keys())
                     if shelf[key]['import_id'] == import_id][0]
@@ -216,6 +212,7 @@ def get_statistics(import_id):
     data = [dict(town=town, ages=list()) for town in towns]
 
     for citizen in citizens:
+        # calculate age
         try:
             birth_date = datetime.strptime(citizen['birth_date'], '%d.%m.%Y')
             age = tools.calculate_age(birth_date)
@@ -231,6 +228,7 @@ def get_statistics(import_id):
         # apply changes
         data[index] = town_statistics
 
+    # count percentiles
     for town_statistics in data:
         ages = town_statistics.pop('ages')
         for percent in [50, 75, 99]:
