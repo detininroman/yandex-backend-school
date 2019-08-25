@@ -2,8 +2,8 @@ import shelve
 from datetime import datetime
 from flask import Flask, g, request
 
-from service.tools import error, contains_digit, contains_letter, \
-    validate_payload, debug, calculate_age, get_import_id, percentile
+from service import tools
+from service.tools import error, debug
 
 app = Flask(__name__)
 
@@ -46,13 +46,13 @@ def post_import() -> (dict, int):
     if not data:
         return error('invalid json'), 400
 
-    invalid_payload = validate_payload(data['citizens'])
+    invalid_payload = tools.validate_payload(data['citizens'])
     if invalid_payload:
         return invalid_payload
 
     shelf = get_db()
 
-    import_id = get_import_id(shelf)
+    import_id = tools.get_import_id(shelf)
 
     data['import_id'] = import_id
     shelf[str(import_id)] = data
@@ -131,7 +131,7 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
             rel['relatives'].remove(citizen_id)
             citizens[index] = rel
 
-    invalid_payload = validate_payload(citizens, fields_to_update)
+    invalid_payload = tools.validate_payload(citizens, fields_to_update)
     if invalid_payload:
         return invalid_payload
 
@@ -218,7 +218,7 @@ def get_statistics(import_id):
     for citizen in citizens:
         try:
             birth_date = datetime.strptime(citizen['birth_date'], '%d.%m.%Y')
-            age = calculate_age(birth_date)
+            age = tools.calculate_age(birth_date)
         except ValueError:
             return error('birth_date is not valid'), 400
 
@@ -234,6 +234,6 @@ def get_statistics(import_id):
     for town_statistics in data:
         ages = town_statistics.pop('ages')
         for percent in [50, 75, 99]:
-            town_statistics[f'p{percent}'] = percentile(ages, percent)
+            town_statistics[f'p{percent}'] = tools.percentile(ages, percent)
 
     return dict(data=data), 200
