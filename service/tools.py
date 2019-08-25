@@ -54,11 +54,11 @@ def validate_field(data: dict, field_name: str) -> (dict, int):
     if field_name in ['town', 'street', 'building',
                       'name', 'birth_date', 'gender']:
         if not isinstance(data[field_name], str):
-            return error(f'{field_name} name must be string')
+            return error(f'{field_name} name must be string'), 400
 
     elif field_name in ['citizen_id', 'apartment']:
         if not isinstance(data[field_name], int):
-            return error(f'{field_name} name must be int')
+            return error(f'{field_name} name must be int'), 400
 
     elif field_name in ['relatives']:
         if not isinstance(data[field_name], list):
@@ -107,11 +107,6 @@ def validate_payload(citizens, fields_to_check=None):
     # validate only needed fields while updating citizen's info
     fields_to_check = fields_to_check or all_fields
 
-    # validate ID uniqueness
-    identifiers = [item['citizen_id'] for item in citizens]
-    if not len(set(identifiers)) == len(identifiers):
-        return error('Identifiers are not unique'), 400
-
     for citizen in citizens:
         # while citizen creating (not updating)
         # check if all fields exist in payload
@@ -139,6 +134,11 @@ def validate_payload(citizens, fields_to_check=None):
                         item['citizen_id'] == relative_id][0]
             if citizen['citizen_id'] not in relative['relatives']:
                 return error('invalid relatives'), 400
+
+    # validate ID uniqueness
+    identifiers = [item['citizen_id'] for item in citizens]
+    if not len(set(identifiers)) == len(identifiers):
+        return error('identifiers are not unique'), 400
 
     return
 
