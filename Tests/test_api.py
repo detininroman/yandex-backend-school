@@ -3,7 +3,7 @@ import requests
 base_url = 'http://0.0.0.0:80'
 
 
-def test_valid_create():
+def test_create_valid():
     citizens = list()
     for i in range(1, 100):
         birth_year = 1950 + i % 50
@@ -30,11 +30,11 @@ def test_valid_create():
     assert response.json()['data'] == payload['citizens']
 
 
-def test_invalid_create():
+def test_create_invalid_id():
     citizens = list()
     for i in range(1, 4):
         citizens.append(
-            dict(citizen_id="WRONG_CITIZEN_ID",
+            dict(citizen_id="WRONG_CITIZEN_ID",  # invalid
                  town='Moscow',
                  street='street_name',
                  building='building_name',
@@ -50,3 +50,48 @@ def test_invalid_create():
     response = requests.post(url=f'{base_url}/imports', json=payload)
     assert response.status_code == 400
     assert response.json()['error'] == 'citizen_id name must be int'
+
+
+def test_create_invalid_name():
+    citizens = list()
+    for i in range(1, 4):
+        citizens.append(
+            dict(citizen_id=i,
+                 town='Moscow',
+                 street='---',  # invalid
+                 building='building_name',
+                 apartment=10,
+                 name='test_name',
+                 birth_date='03.02.1998',
+                 gender='male',
+                 relatives=[]
+                 )
+        )
+    payload = dict(citizens=citizens)
+
+    response = requests.post(url=f'{base_url}/imports', json=payload)
+    assert response.status_code == 400
+    assert response.json()['error'] == 'street name should contain at least' \
+                                       ' one letter or one digit'
+
+
+def test_create_invalid_relatives():
+    citizens = list()
+    for i in range(1, 4):
+        citizens.append(
+            dict(citizen_id=i,
+                 town='Moscow',
+                 street='street_name',
+                 building='building_name',
+                 apartment=10,
+                 name='test_name',
+                 birth_date='03.02.1998',
+                 gender='male',
+                 relatives=[1]  # invalid
+                 )
+        )
+    payload = dict(citizens=citizens)
+
+    response = requests.post(url=f'{base_url}/imports', json=payload)
+    assert response.status_code == 400
+    assert response.json()['error'] == 'invalid relatives'
