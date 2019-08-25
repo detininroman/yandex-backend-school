@@ -107,7 +107,9 @@ def validate_payload(citizens, fields_to_check=None):
     # validate only needed fields while updating citizen's info
     fields_to_check = fields_to_check or all_fields
 
+    identifiers = list()
     for citizen in citizens:
+        identifiers.append(citizen['citizen_id'])
         # while citizen creating (not updating)
         # check if all fields exist in payload
         if 'citizen_id' in fields_to_check:
@@ -136,7 +138,6 @@ def validate_payload(citizens, fields_to_check=None):
                 return error('invalid relatives'), 400
 
     # validate ID uniqueness
-    identifiers = [item['citizen_id'] for item in citizens]
     if not len(set(identifiers)) == len(identifiers):
         return error('identifiers are not unique'), 400
 
