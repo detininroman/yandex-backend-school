@@ -5,7 +5,8 @@ base_url = 'http://0.0.0.0:80'
 
 def test_valid_create():
     citizens = list()
-    for i in range(1, 4):
+    for i in range(1, 100):
+        birth_year = 1950 + i % 50
         citizens.append(
             dict(citizen_id=i,
                  town='Moscow',
@@ -13,7 +14,7 @@ def test_valid_create():
                  building='building_name',
                  apartment=10,
                  name='test_name',
-                 birth_date='03.02.1998',
+                 birth_date=f'03.02.{birth_year}',
                  gender='male',
                  relatives=[]
                  )
