@@ -7,3 +7,5 @@ To check the service just run:
 Used frameworks and technologies:
 * Flask
 * sqlite
+
+If you have any questions, please contact me on telegram: @detininroman
