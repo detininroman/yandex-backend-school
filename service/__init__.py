@@ -4,7 +4,7 @@ import numpy as np
 from flask import Flask, g, request
 
 from service.tools import error, contains_digit, contains_letter, \
-    validate_payload, debug, calculate_age
+    validate_payload, debug, calculate_age, get_import_id
 
 app = Flask(__name__)
 
@@ -49,16 +49,7 @@ def post_import() -> (dict, int):
 
     shelf = get_db()
 
-    # TODO: refactor it
-    keys = list(shelf.keys())
-    keysint = [int(i) for i in keys]
-    keysint.sort()
-    keys = [str(i) for i in keysint]
-
-    try:
-        import_id = dict(shelf[keys[-1]])['import_id'] + 1
-    except IndexError:
-        import_id = 1
+    import_id = get_import_id(shelf)
 
     data['import_id'] = import_id
     shelf[str(import_id)] = data
