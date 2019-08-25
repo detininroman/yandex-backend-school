@@ -1,7 +1,7 @@
-import shelve
 from datetime import datetime
 
 from flask import Flask, g, request
+from sqlitedict import SqliteDict
 
 from service import tools
 from service.tools import error, debug
@@ -12,7 +12,7 @@ app = Flask(__name__)
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = shelve.open("devices.db")
+        db = g._database = SqliteDict('./my_db.sqlite', autocommit=True)
     return db
 
 
@@ -51,11 +51,11 @@ def create_import() -> (dict, int):
     if invalid_payload:
         return invalid_payload
 
-    shelf = get_db()
+    database = get_db()
 
-    import_id = tools.get_import_id(shelf)
+    import_id = int(list(database.keys())[-1]) + 1
     data['import_id'] = import_id
-    shelf[str(import_id)] = data
+    database[import_id] = data
 
     return dict(data=dict(import_id=import_id)), 201
 
@@ -74,12 +74,12 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
     if not data:
         return error('invalid json'), 400
 
-    shelf = get_db()
+    database = get_db()
 
     # find import to update
     try:
-        citizens = [shelf[key]['citizens'] for key in list(shelf.keys())
-                    if shelf[key]['import_id'] == import_id][0]
+        citizens = [database[key]['citizens'] for key in list(database.keys())
+                    if database[key]['import_id'] == import_id][0]
     except IndexError:
         return error(f'invalid import_id: {import_id}')
 
@@ -133,7 +133,7 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
     if invalid_payload:
         return invalid_payload
 
-    shelf[str(import_id)] = dict(
+    database[import_id] = dict(
         citizens=citizens,
         import_id=import_id
     )
@@ -149,11 +149,11 @@ def get_citizens(import_id: int) -> (dict, int):
     :param import_id: the ID of import.
     :return: list of citizens and status code.
     """
-    shelf = get_db()
+    database = get_db()
 
     try:
-        citizens = [shelf[key]['citizens'] for key in list(shelf.keys())
-                    if shelf[key]['import_id'] == import_id][0]
+        citizens = [database[key]['citizens'] for key in list(database.keys())
+                    if database[key]['import_id'] == import_id][0]
         return dict(data=citizens)
     except IndexError:
         return error('import not found'), 404
@@ -162,12 +162,12 @@ def get_citizens(import_id: int) -> (dict, int):
 # Task 4
 @app.route('/imports/<int:import_id>/citizens/birthdays', methods=['GET'])
 def get_birthdays(import_id):
-    shelf = get_db()
+    database = get_db()
 
     # get list of citizens for particular import
     try:
-        citizens = [shelf[key]['citizens'] for key in list(shelf.keys())
-                    if shelf[key]['import_id'] == import_id][0]
+        citizens = [database[key]['citizens'] for key in list(database.keys())
+                    if database[key]['import_id'] == import_id][0]
     except IndexError:
         return error('not found'), 404
 
@@ -198,12 +198,12 @@ def get_birthdays(import_id):
 @app.route(
     '/imports/<int:import_id>/towns/stat/percentile/age', methods=['GET'])
 def get_statistics(import_id):
-    shelf = get_db()
+    database = get_db()
 
     # get list of citizens for particular import
     try:
-        citizens = [shelf[key]['citizens'] for key in list(shelf.keys())
-                    if shelf[key]['import_id'] == import_id][0]
+        citizens = [database[key]['citizens'] for key in list(database.keys())
+                    if database[key]['import_id'] == import_id][0]
     except IndexError:
         return error('import not found'), 404
 

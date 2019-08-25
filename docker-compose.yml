@@ -1,7 +1,7 @@
 version: '3.7'
 
 services:
-  yandex:
+  yandex_back:
     build: .
     volumes:
       - .:/usr/src/app

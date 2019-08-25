@@ -49,18 +49,6 @@ def contains_letter(string: str) -> bool:
     return any(char.isalpha() for char in string)
 
 
-def get_import_id(shelf):
-    try:
-        # TODO: refactor it
-        keys = list(shelf.keys())
-        keysint = [int(i) for i in keys]
-        keysint.sort()
-        keys = [str(i) for i in keysint]
-        return dict(shelf[keys[-1]])['import_id'] + 1
-    except IndexError:
-        return 1
-
-
 def validate_field(data: dict, field_name: str) -> (dict, int):
     # validate types
     if field_name in ['town', 'street', 'building',
