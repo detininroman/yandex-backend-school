@@ -22,6 +22,7 @@ def teardown_db(exception):
         db.close()
 
 
+# Task 0 (not required)
 @app.route('/imports', methods=['GET'])
 def get_all_imports() -> (dict, int):
     """Gets all imports.
@@ -34,6 +35,7 @@ def get_all_imports() -> (dict, int):
     return dict(imports=imports), 200
 
 
+# Task 1
 @app.route('/imports', methods=['POST'])
 def post_import() -> (dict, int):
     """Creates a new import.
@@ -58,23 +60,7 @@ def post_import() -> (dict, int):
     return dict(data=dict(import_id=import_id)), 201
 
 
-@app.route('/import/<int:import_id>/citizens', methods=['GET'])
-def get_import_citizens(import_id: int) -> (dict, int):
-    """Gets list of citizens for particular import.
-
-    :param import_id: the ID of import.
-    :return: list of citizens and status code.
-    """
-    shelf = get_db()
-
-    try:
-        citizens = [shelf[key]['citizens'] for key in list(shelf.keys())
-                    if shelf[key]['import_id'] == import_id][0]
-        return dict(data=citizens)
-    except IndexError:
-        return error('not found'), 404
-
-
+# Task 2
 @app.route(
     '/imports/<int:import_id>/citizens/<int:citizen_id>', methods=['PATCH'])
 def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
@@ -157,6 +143,25 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
     return dict(data=citizen), 200
 
 
+# Task 3
+@app.route('/import/<int:import_id>/citizens', methods=['GET'])
+def get_import_citizens(import_id: int) -> (dict, int):
+    """Gets list of citizens for particular import.
+
+    :param import_id: the ID of import.
+    :return: list of citizens and status code.
+    """
+    shelf = get_db()
+
+    try:
+        citizens = [shelf[key]['citizens'] for key in list(shelf.keys())
+                    if shelf[key]['import_id'] == import_id][0]
+        return dict(data=citizens)
+    except IndexError:
+        return error('not found'), 404
+
+
+# Task 4
 @app.route('/imports/<int:import_id>/citizens/birthdays', methods=['GET'])
 def get_birthdays(import_id):
     shelf = get_db()
@@ -192,6 +197,7 @@ def get_birthdays(import_id):
     return dict(data=months), 200
 
 
+# Task 5
 @app.route(
     '/imports/<int:import_id>/towns/stat/percentile/age', methods=['GET'])
 def get_statistics(import_id):
