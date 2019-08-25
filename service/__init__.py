@@ -1,10 +1,9 @@
 import shelve
 from datetime import datetime
-import numpy as np
 from flask import Flask, g, request
 
 from service.tools import error, contains_digit, contains_letter, \
-    validate_payload, debug, calculate_age, get_import_id
+    validate_payload, debug, calculate_age, get_import_id, percentile
 
 app = Flask(__name__)
 
@@ -227,13 +226,8 @@ def get_statistics(import_id):
         data[index] = town_statistics
 
     for town_statistics in data:
-        ages = np.array(town_statistics['ages'])
-        town_statistics['p50'] = np.percentile(ages, 50)
-        town_statistics['p75'] = np.percentile(ages, 75)
-        town_statistics['p99'] = np.percentile(ages, 99)
-
-    # clean data
-    for item in data:
-        item.pop('ages')
+        ages = town_statistics.pop('ages')
+        for percent in [50, 75, 99]:
+            town_statistics[f'p{percent}'] = percentile(ages, percent)
 
     return dict(data=data), 200

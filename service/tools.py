@@ -1,4 +1,5 @@
 from datetime import datetime
+import math
 
 
 def error(arg):
@@ -9,6 +10,25 @@ def calculate_age(born):
     today = datetime.today()
     return today.year - born.year - \
            ((today.month, today.day) < (born.month, born.day))
+
+
+def percentile(values: list, percent: int) -> float or None:
+    """Finds the percentile of a list of values.
+
+    :param values: sorted list of values
+    :param percent: percent (from 0 to 100)
+    :return: the percentile of the values
+    """
+    if values is None:
+        return None
+
+    values.sort()
+
+    k = (len(values) - 1) * (percent / 100)
+    f, c = math.floor(k), math.ceil(k)
+    result = values[int(k)] if f == c else \
+        values[int(f)] * (c - k) + values[int(c)] * (k - f)
+    return round(result, 2)
 
 
 def contains_digit(string: str) -> bool:
