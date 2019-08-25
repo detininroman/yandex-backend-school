@@ -1,5 +1,5 @@
 __pycache__
 .DS_Store
 .idea/
-/devices.db
 /test.py
+/my_db.sqlite
