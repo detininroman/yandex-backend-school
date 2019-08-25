@@ -30,10 +30,8 @@ def get_all_imports() -> (dict, int):
 
     :return: imports and status code.
     """
-    shelf = get_db()
-
-    imports = [shelf[key] for key in list(shelf.keys())]
-    return dict(imports=imports), 200
+    database = get_db()
+    return dict(imports=list(database.values())), 200
 
 
 # Task 1
@@ -78,10 +76,9 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
 
     # find import to update
     try:
-        citizens = [database[key]['citizens'] for key in list(database.keys())
-                    if database[key]['import_id'] == import_id][0]
-    except IndexError:
-        return error(f'invalid import_id: {import_id}')
+        citizens = database[import_id]['citizens']
+    except KeyError:
+        return error(f'import {import_id} not found'), 404
 
     # find particular citizen and its index
     try:
@@ -152,11 +149,9 @@ def get_citizens(import_id: int) -> (dict, int):
     database = get_db()
 
     try:
-        citizens = [database[key]['citizens'] for key in list(database.keys())
-                    if database[key]['import_id'] == import_id][0]
-        return dict(data=citizens)
-    except IndexError:
-        return error('import not found'), 404
+        return dict(data=database[import_id]['citizens']), 200
+    except KeyError:
+        return error(f'import {import_id} not found'), 404
 
 
 # Task 4
@@ -166,10 +161,9 @@ def get_birthdays(import_id):
 
     # get list of citizens for particular import
     try:
-        citizens = [database[key]['citizens'] for key in list(database.keys())
-                    if database[key]['import_id'] == import_id][0]
-    except IndexError:
-        return error('not found'), 404
+        citizens = database[import_id]['citizens']
+    except KeyError:
+        return error(f'import {import_id} not found'), 404
 
     # create dictionary for output
     months = {key: list() for key in range(1, 12 + 1)}
@@ -202,10 +196,9 @@ def get_statistics(import_id):
 
     # get list of citizens for particular import
     try:
-        citizens = [database[key]['citizens'] for key in list(database.keys())
-                    if database[key]['import_id'] == import_id][0]
-    except IndexError:
-        return error('import not found'), 404
+        citizens = database[import_id]['citizens']
+    except KeyError:
+        return error(f'import {import_id} not found'), 404
 
     # create list of all towns from import
     towns = list(set([citizen['town'] for citizen in citizens]))
