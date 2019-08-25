@@ -42,6 +42,8 @@ def post_import() -> (dict, int):
     :return: import identifier and status code
     """
     data = request.get_json()
+    if not data:
+        return error('invalid json'), 400
 
     invalid_payload = validate_payload(data['citizens'])
     if invalid_payload:
@@ -84,17 +86,25 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
     :return: updated information and status code.
     """
     data = request.get_json()
+    if not data:
+        return error('invalid json'), 400
 
     shelf = get_db()
 
-    # information about all citizens in  import to update
-    citizens = [shelf[key]['citizens'] for key in list(shelf.keys())
-                if shelf[key]['import_id'] == import_id][0]
+    # find import to update
+    try:
+        citizens = [shelf[key]['citizens'] for key in list(shelf.keys())
+                    if shelf[key]['import_id'] == import_id][0]
+    except IndexError:
+        return error(f'invalid import_id: {import_id}')
 
     # find particular citizen and its index
-    citizen = [citizen for citizen in citizens
-               if citizen['citizen_id'] == citizen_id][0]
-    index = citizens.index(citizen)
+    try:
+        citizen = [citizen for citizen in citizens
+                   if citizen['citizen_id'] == citizen_id][0]
+        index = citizens.index(citizen)
+    except IndexError:
+        return error(f'invalid citizen_id: {citizen_id}')
 
     # forbid citizen_id changing
     if data.get('citizen_id'):
