@@ -78,7 +78,7 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
     try:
         citizens = database[import_id]['citizens']
     except KeyError:
-        return error(f'import {import_id} not found'), 404
+        return error(f'import {import_id} not found'), 400
 
     # find particular citizen and its index
     try:
@@ -86,7 +86,7 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
                    if citizen['citizen_id'] == citizen_id][0]
         index = citizens.index(citizen)
     except IndexError:
-        return error(f'invalid citizen_id: {citizen_id}')
+        return error(f'invalid citizen_id: {citizen_id}'), 400
 
     # forbid citizen_id changing
     if data.get('citizen_id'):
@@ -151,7 +151,7 @@ def get_citizens(import_id: int) -> (dict, int):
     try:
         return dict(data=database[import_id]['citizens']), 200
     except KeyError:
-        return error(f'import {import_id} not found'), 404
+        return error(f'import {import_id} not found'), 400
 
 
 # Task 4
@@ -163,7 +163,7 @@ def get_birthdays(import_id):
     try:
         citizens = database[import_id]['citizens']
     except KeyError:
-        return error(f'import {import_id} not found'), 404
+        return error(f'import {import_id} not found'), 400
 
     # create dictionary for output
     months = {key: list() for key in range(1, 12 + 1)}
@@ -198,7 +198,7 @@ def get_statistics(import_id):
     try:
         citizens = database[import_id]['citizens']
     except KeyError:
-        return error(f'import {import_id} not found'), 404
+        return error(f'import {import_id} not found'), 400
 
     # create list of all towns from import
     towns = list(set([citizen['town'] for citizen in citizens]))
