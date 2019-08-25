@@ -1,3 +1,5 @@
+import random
+
 import requests
 
 base_url = 'http://0.0.0.0:80'
@@ -34,7 +36,7 @@ def test_create_invalid_id():
     citizens = list()
     for i in range(1, 4):
         citizens.append(
-            dict(citizen_id="WRONG_CITIZEN_ID",  # invalid
+            dict(citizen_id='WRONG_CITIZEN_ID',  # invalid
                  town='Moscow',
                  street='street_name',
                  building='building_name',
@@ -95,3 +97,29 @@ def test_create_invalid_relatives():
     response = requests.post(url=f'{base_url}/imports', json=payload)
     assert response.status_code == 400
     assert response.json()['error'] == 'invalid relatives'
+
+
+def test_update_valid(created_import):
+    response = requests.get(url=f'{base_url}/import/{created_import}/citizens')
+    assert response.status_code == 200
+    citizen_ids = [item['citizen_id'] for item in response.json()['data']]
+
+    citizen_id = random.choice(citizen_ids)
+    response = requests.patch(url=f'{base_url}/imports/'
+                                  f'{created_import}/citizens/{citizen_id}',
+                              json=dict(name='new_name'))
+    assert response.status_code == 200
+    assert response.json()['data']['name'] == 'new_name'
+
+
+def test_update_invalid_birthdate(created_import):
+    response = requests.get(url=f'{base_url}/import/{created_import}/citizens')
+    assert response.status_code == 200
+    citizen_ids = [item['citizen_id'] for item in response.json()['data']]
+
+    citizen_id = random.choice(citizen_ids)
+    response = requests.patch(url=f'{base_url}/imports/'
+                                  f'{created_import}/citizens/{citizen_id}',
+                              json=dict(birth_date='31.02.1998'))
+    assert response.status_code == 400
+    assert response.json()['error'] == 'birth_date is not valid'
