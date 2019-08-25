@@ -51,7 +51,10 @@ def create_import() -> (dict, int):
 
     database = get_db()
 
-    import_id = int(list(database.keys())[-1]) + 1
+    try:
+        import_id = int(list(database.keys())[-1]) + 1
+    except IndexError:
+        import_id = 1
     data['import_id'] = import_id
     database[import_id] = data
 
@@ -101,6 +104,8 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
                 isinstance(data.get('relatives'), list):
             old_relatives = citizen['relatives']
             new_relatives = data['relatives']
+            if not len(new_relatives) == len(set(new_relatives)):
+                return error('invalid relatives'), 400
 
         if data.get(field) is not None:
             fields_to_update.append(field)
@@ -117,13 +122,16 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
             new_relative = [item for item in citizens
                             if item['citizen_id'] == relative][0]
             index = citizens.index(new_relative)
-            new_relative['relatives'].append(citizen_id)
+            if citizen_id not in new_relative['relatives']:
+                new_relative['relatives'].append(citizen_id)
+            debug(new_relative['relatives'])
             citizens[index] = new_relative
         elif relative in old_relatives and relative not in new_relatives:
             old_relative = [item for item in citizens
                             if item['citizen_id'] == relative][0]
             index = citizens.index(old_relative)
-            old_relative['relatives'].remove(citizen_id)
+            if citizen_id in old_relative['relatives']:
+                old_relative['relatives'].remove(citizen_id)
             citizens[index] = old_relative
 
     invalid_payload = tools.validate_payload(citizens, fields_to_update)
