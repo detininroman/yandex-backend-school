@@ -1,11 +1,18 @@
 # Yandex Backend School
 
-To check the service just run:
-```
-> docker-compose up
-```
 Used frameworks and technologies:
 * Flask
 * sqlite
+
+To run the service:
+```
+> docker-compose up
+```
+
+To run tests:
+```
+> cd Tests/
+> pytest
+```
 
 If you have any questions, please contact me on telegram: @detininroman
