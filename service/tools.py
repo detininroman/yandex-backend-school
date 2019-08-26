@@ -118,7 +118,7 @@ def validate_payload(citizens, fields_to_check=None):
 
         for field_name in fields_to_check:
             # check if field name is correct
-            if field_name not in citizen.keys():
+            if field_name not in all_fields:
                 return error(f'{field_name} is unknown field'), 400
             # check if values are not empty
             if not citizen.get(field_name) and field_name != 'relatives':
