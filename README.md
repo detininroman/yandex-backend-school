@@ -3,15 +3,18 @@
 Used frameworks and technologies:
 * Flask
 * sqlitedict
+* docker
 
 To run the service:
 ```
+> cd YandexBackendSchool/
 > docker-compose build
 > docker-compose up
 ```
 
 To run tests:
 ```
+> cd YandexBackendSchool/
 > cd Tests/
 > pytest
 ```
