@@ -2,7 +2,7 @@ import math
 from datetime import datetime
 
 
-def error(arg):
+def error(arg: str) -> dict:
     return {'error': arg}
 
 
@@ -101,13 +101,16 @@ def validate_field(data: dict, field_name: str) -> (dict, int):
     return
 
 
-def validate_payload(citizens, fields_to_check=None):
-    all_fields = ['citizen_id', 'building', 'street', 'town',
-                  'gender', 'birth_date', 'name', 'apartment', 'relatives']
+def validate_payload(citizens: list, fields_to_check: list = None) -> (dict, int):
+    all_fields = [
+        'citizen_id', 'building', 'street',
+        'town', 'gender', 'birth_date',
+        'name', 'apartment', 'relatives'
+    ]
     # validate only needed fields while updating citizen's info
     fields_to_check = fields_to_check or all_fields
 
-    identifiers = list()
+    identifiers = []
     for citizen in citizens:
         identifiers.append(citizen['citizen_id'])
         # while citizen creating (not updating)
@@ -131,7 +134,7 @@ def validate_payload(citizens, fields_to_check=None):
                 return is_field_invalid
 
         # validate relatives
-        relatives = list()
+        relatives = []
         for relative_id in citizen['relatives']:
             relatives.append(relative_id)
             relative = [item for item in citizens if

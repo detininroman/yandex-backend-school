@@ -94,8 +94,8 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
     if data.get('citizen_id'):
         return error('citizen_id cannot be changed'), 400
 
-    fields_to_update = list()
-    new_relatives, old_relatives = list(), list()
+    fields_to_update = []
+    new_relatives, old_relatives = [], []
 
     for field in data.keys():
         # if relatives are changed
@@ -173,7 +173,7 @@ def get_birthdays(import_id):
         return error(f'import {import_id} not found'), 400
 
     # create dictionary for output
-    months = {key: list() for key in range(1, 12 + 1)}
+    months = {key: [] for key in range(1, 12 + 1)}
 
     for citizen in citizens:
         for relative in citizen['relatives']:
