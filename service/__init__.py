@@ -1,6 +1,8 @@
 from datetime import datetime
 
-from flask import Flask, g, request
+from flask import Flask
+from flask import g
+from flask import request
 from sqlitedict import SqliteDict
 
 from service import tools
