@@ -132,10 +132,11 @@ def test_bitrhdays():
 
 def test_statistics():
     citizens, ages = [], {}
-    for i in range(1, 1000):
+    towns = ['Moscow', 'London', 'Paris', 'New-York']
+    for i in range(1, 2000):
         year = 1940 + random.randint(0, 60)
         birth_date = f'05.04.{year}'
-        town = 'Moscow' if i % 2 else 'Saint-Petersburg'
+        town = towns[i % len(towns)]
 
         citizen = create_default_citizen(
             citizen_id=i,
@@ -157,13 +158,17 @@ def test_statistics():
         url=f'{base_url}/imports/{import_id}/towns/stat/percentile/age')
     assert response.status_code == 200
 
-    statistics = []
+    expected_data = []
     for (key, value) in ages.items():
-        inp = np.array(value)
+        ages_for_town = np.array(value)
         town_info = {'town': key}
         for percent in [50, 75, 99]:
-            town_info[f'p{percent}'] = round(np.percentile(inp, percent), 2)
-        statistics.append(town_info)
-    expected_result = {'data': statistics}
+            town_info[f'p{percent}'] = \
+                round(np.percentile(ages_for_town, percent), 2)
+        expected_data.append(town_info)
 
-    assert response.json() == expected_result
+    statistics = response.json()['data']
+    for town in towns:
+        d1 = [d for d in statistics if d['town'] == town][0]
+        d2 = [d for d in expected_data if d['town'] == town][0]
+        assert d1 == d2
