@@ -6,6 +6,7 @@ Used frameworks and technologies:
 
 To run the service:
 ```
+> docker-compose build
 > docker-compose up
 ```
 
