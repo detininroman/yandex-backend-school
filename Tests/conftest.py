@@ -7,7 +7,7 @@ base_url = 'http://0.0.0.0:80'
 @pytest.fixture
 def created_import():
     citizens = list()
-    for i in range(1, 4):
+    for i in range(1, 6):
         citizens.append(
             dict(citizen_id=i,
                  town='Moscow',

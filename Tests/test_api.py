@@ -123,3 +123,51 @@ def test_update_invalid_birthdate(created_import):
                               json=dict(birth_date='31.02.1998'))
     assert response.status_code == 400
     assert response.json()['error'] == 'birth_date is not valid'
+
+
+def test_bitrhdays():
+    citizens = list()
+
+    may = 5
+    september = 9
+
+    for i in range(1, 6):
+        citizens.append(
+            {
+                "citizen_id": i,
+                "town": "Moscow",
+                "street": "123",
+                "building": "empty",
+                "apartment": 7,
+                "name": "name",
+                "birth_date": f'26.{may}.1988',
+                "gender": "male",
+                "relatives": []
+            })
+
+    citizens[0]['relatives'] = [2, 3, 4]
+    citizens[1]['relatives'] = [1]
+    citizens[2]['relatives'] = [1]
+    citizens[3]['relatives'] = [1]
+    citizens[4]['birth_date'] = f'26.{september}.1988'
+    citizens[4]['relatives'] = [5]
+    payload = dict(citizens=citizens)
+
+    response = requests.post(url=f'{base_url}/imports', json=payload)
+    assert response.status_code == 201
+    import_id = response.json()['data']['import_id']
+
+    response = requests.get(url=f'{base_url}/imports/{import_id}/citizens/birthdays')
+    assert response.status_code == 200
+    may_info = [
+        {'citizen_id': 1, 'presents': 3},
+        {'citizen_id': 2, 'presents': 1},
+        {'citizen_id': 3, 'presents': 1},
+        {'citizen_id': 4, 'presents': 1}]
+    september_info = [{'citizen_id': 5, 'presents': 1}]
+
+    assert response.json()['data'][str(may)] == may_info
+    assert response.json()['data'][str(september)] == september_info
+    for month, month_info in response.json()['data'].items():
+        if int(month) not in [september, may]:
+            assert month_info == []
