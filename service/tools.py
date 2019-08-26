@@ -101,7 +101,8 @@ def validate_field(data: dict, field_name: str) -> (dict, int):
     return
 
 
-def validate_payload(citizens: list, fields_to_check: list = None) -> (dict, int):
+def validate_payload(
+        citizens: list, fields_to_check: list = None) -> (dict, int):
     all_fields = [
         'citizen_id', 'building', 'street',
         'town', 'gender', 'birth_date',
