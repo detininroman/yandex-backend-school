@@ -132,35 +132,36 @@ def test_bitrhdays():
 
     for i in range(1, 6):
         citizens.append(
-            {
-                "citizen_id": i,
-                "town": "Moscow",
-                "street": "123",
-                "building": "empty",
-                "apartment": 7,
-                "name": "name",
-                "birth_date": f'26.{may}.1988',
-                "gender": "male",
-                "relatives": []
-            })
+            dict(
+                citizen_id=i,
+                town='Moscow',
+                street='street_name',
+                building='building_name',
+                apartment=10,
+                name='test_name',
+                birth_date=f'26.{may}.1988',
+                gender='male',
+                relatives=[]
+            )
+        )
 
     # input data
-    citizens[0]['relatives'] = [2, 3, 4]
-    citizens[1]['relatives'] = [1]
-    citizens[2]['relatives'] = [1]
-    citizens[3]['relatives'] = [1]
+    actor = 1
+    citizens[actor - 1]['relatives'] += [2, 3, 4]
+    for relative in citizens[actor - 1]['relatives']:
+        citizens[relative - 1]['relatives'] = [actor]
     # expected result
-    may_info = [
-        {'citizen_id': 1, 'presents': len(citizens[0]['relatives'])},
-        {'citizen_id': 2, 'presents': len(citizens[1]['relatives'])},
-        {'citizen_id': 3, 'presents': len(citizens[2]['relatives'])},
-        {'citizen_id': 4, 'presents': len(citizens[3]['relatives'])}]
+    may_info = [dict(citizen_id=i,
+                     presents=len(citizens[i - 1]['relatives'])
+                     ) for i in range(1, 5)]
 
     # input data
-    citizens[4]['relatives'] = [5]
-    citizens[4]['birth_date'] = f'26.{september}.1988'
+    actor = 5
+    citizens[actor - 1]['relatives'] += [actor]
+    citizens[actor - 1]['birth_date'] = f'26.{september}.1988'
     # expected result
-    september_info = [{'citizen_id': 5, 'presents': 1}]
+    september_info = [dict(citizen_id=actor,
+                           presents=len(citizens[actor - 1]['relatives']))]
 
     payload = dict(citizens=citizens)
 
