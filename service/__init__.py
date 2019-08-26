@@ -128,7 +128,6 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
             index = citizens.index(new_relative)
             if citizen_id not in new_relative['relatives']:
                 new_relative['relatives'].append(citizen_id)
-            debug(new_relative['relatives'])
             citizens[index] = new_relative
         elif relative in old_relatives and relative not in new_relatives:
             old_relative = [item for item in citizens
