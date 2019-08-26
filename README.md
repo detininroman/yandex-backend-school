@@ -2,7 +2,7 @@
 
 Used frameworks and technologies:
 * Flask
-* sqlite
+* sqlitedict
 
 To run the service:
 ```
