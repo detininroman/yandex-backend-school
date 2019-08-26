@@ -1,8 +1,11 @@
 import random
+from datetime import datetime
 
+import numpy as np
 import requests
 
 from service import base_url
+from service import tools
 from service.tools import create_default_citizen
 
 
@@ -116,7 +119,8 @@ def test_bitrhdays():
     assert response.status_code == 201
     import_id = response.json()['data']['import_id']
 
-    response = requests.get(url=f'{base_url}/imports/{import_id}/citizens/birthdays')
+    response = requests.get(
+        url=f'{base_url}/imports/{import_id}/citizens/birthdays')
     assert response.status_code == 200
 
     assert response.json()['data'][str(may)] == may_info
@@ -124,3 +128,42 @@ def test_bitrhdays():
     for month, month_info in response.json()['data'].items():
         if int(month) not in [september, may]:
             assert month_info == []
+
+
+def test_statistics():
+    citizens, ages = [], {}
+    for i in range(1, 1000):
+        year = 1940 + random.randint(0, 60)
+        birth_date = f'05.04.{year}'
+        town = 'Moscow' if i % 2 else 'Saint-Petersburg'
+
+        citizen = create_default_citizen(
+            citizen_id=i,
+            birth_date=birth_date,
+            town=town
+        )
+        citizens.append(citizen)
+
+        birth_date = datetime.strptime(citizen['birth_date'], '%d.%m.%Y')
+        age = tools.calculate_age(birth_date)
+        ages[town] = ages[town] + [age] if town in ages.keys() else [age]
+
+    payload = {'citizens': citizens}
+    response = requests.post(url=f'{base_url}/imports', json=payload)
+    assert response.status_code == 201
+    import_id = response.json()['data']['import_id']
+
+    response = requests.get(
+        url=f'{base_url}/imports/{import_id}/towns/stat/percentile/age')
+    assert response.status_code == 200
+
+    statistics = []
+    for (key, value) in ages.items():
+        inp = np.array(value)
+        town_info = {'town': key}
+        for percent in [50, 75, 99]:
+            town_info[f'p{percent}'] = round(np.percentile(inp, percent), 2)
+        statistics.append(town_info)
+    expected_result = {'data': statistics}
+
+    assert response.json() == expected_result
