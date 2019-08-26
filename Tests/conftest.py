@@ -1,28 +1,20 @@
+import os
+import sys
+
 import pytest
 import requests
+
+sys.path.append(os.path.abspath('../'))
+from service.tools import create_default_citizen
 
 base_url = 'http://0.0.0.0:80'
 
 
 @pytest.fixture
 def created_import():
-    citizens = list()
-    for i in range(1, 6):
-        citizens.append(
-            dict(citizen_id=i,
-                 town='Moscow',
-                 street='street_name',
-                 building='building_name',
-                 apartment=10,
-                 name='test_name',
-                 birth_date='03.02.1998',
-                 gender='male',
-                 relatives=[]
-                 )
-        )
-    payload = dict(citizens=citizens)
+    citizens = [create_default_citizen(citizen_id=i) for i in range(1, 6)]
+    payload = {'citizens': citizens}
 
     response = requests.post(url=f'{base_url}/imports', json=payload)
     assert response.status_code == 201
-    import_id = response.json()['data']['import_id']
-    yield import_id
+    yield response.json()['data']['import_id']

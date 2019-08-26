@@ -152,3 +152,20 @@ def validate_payload(citizens, fields_to_check=None):
 
 def debug(arg):
     return print(arg, flush=True)
+
+
+def create_default_citizen(
+        citizen_id, town=None, street=None, building=None, apartment=None,
+        name=None, birth_date=None, gender=None, relatives=None):
+    citizen = {
+        'citizen_id': citizen_id,
+        'town': town or 'Moscow',
+        'street': street or 'Tverskaya',
+        'building': building or '32k3',
+        'apartment': apartment or 23,
+        'name': name or 'Roman',
+        'birth_date': birth_date or '03.02.1998',
+        'gender': gender or 'male',
+        'relatives': relatives or []
+    }
+    return citizen

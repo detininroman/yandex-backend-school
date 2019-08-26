@@ -1,27 +1,26 @@
+import os
 import random
+import sys
+from typing import Dict, List, Any, Union
 
 import requests
+
+sys.path.append(os.path.abspath('../'))
+from service.tools import create_default_citizen
 
 base_url = 'http://0.0.0.0:80'
 
 
 def test_create_valid():
-    citizens = list()
+    citizens: List[Dict[str, Union[Union[str, int, List[Any]], Any]]] = []
     for i in range(1, 100):
         birth_year = 1950 + i % 50
-        citizens.append(
-            dict(citizen_id=i,
-                 town='Moscow',
-                 street='street_name',
-                 building='building_name',
-                 apartment=10,
-                 name='test_name',
-                 birth_date=f'03.02.{birth_year}',
-                 gender='male',
-                 relatives=[]
-                 )
+        citizen = create_default_citizen(
+            citizen_id=i,
+            birth_date=f'03.02.{birth_year}'
         )
-    payload = dict(citizens=citizens)
+        citizens.append(citizen)
+    payload = {'citizens': citizens}
 
     response = requests.post(url=f'{base_url}/imports', json=payload)
     assert response.status_code == 201
@@ -33,43 +32,17 @@ def test_create_valid():
 
 
 def test_create_invalid_id():
-    citizens = list()
-    for i in range(1, 4):
-        citizens.append(
-            dict(citizen_id='WRONG_CITIZEN_ID',  # invalid
-                 town='Moscow',
-                 street='street_name',
-                 building='building_name',
-                 apartment=10,
-                 name='test_name',
-                 birth_date='03.02.1998',
-                 gender='male',
-                 relatives=[]
-                 )
-        )
-    payload = dict(citizens=citizens)
+    citizens = [create_default_citizen(citizen_id='WRONG_CITIZEN_ID')]
+    payload = {'citizens': citizens}
 
     response = requests.post(url=f'{base_url}/imports', json=payload)
     assert response.status_code == 400
     assert response.json()['error'] == 'citizen_id name must be int'
 
 
-def test_create_invalid_name():
-    citizens = list()
-    for i in range(1, 4):
-        citizens.append(
-            dict(citizen_id=i,
-                 town='Moscow',
-                 street='---',  # invalid
-                 building='building_name',
-                 apartment=10,
-                 name='test_name',
-                 birth_date='03.02.1998',
-                 gender='male',
-                 relatives=[]
-                 )
-        )
-    payload = dict(citizens=citizens)
+def test_create_invalid_street():
+    citizens = [create_default_citizen(citizen_id=1, street='---')]
+    payload = {'citizens': citizens}
 
     response = requests.post(url=f'{base_url}/imports', json=payload)
     assert response.status_code == 400
@@ -78,21 +51,11 @@ def test_create_invalid_name():
 
 
 def test_create_invalid_relatives():
-    citizens = list()
-    for i in range(1, 4):
-        citizens.append(
-            dict(citizen_id=i,
-                 town='Moscow',
-                 street='street_name',
-                 building='building_name',
-                 apartment=10,
-                 name='test_name',
-                 birth_date='03.02.1998',
-                 gender='male',
-                 relatives=[1]  # invalid
-                 )
-        )
-    payload = dict(citizens=citizens)
+    citizens = [create_default_citizen(
+        citizen_id=i,
+        relatives=[1]
+    ) for i in range(1, 4)]
+    payload = {'citizens': citizens}
 
     response = requests.post(url=f'{base_url}/imports', json=payload)
     assert response.status_code == 400
@@ -100,50 +63,39 @@ def test_create_invalid_relatives():
 
 
 def test_update_valid(created_import):
-    response = requests.get(url=f'{base_url}/import/{created_import}/citizens')
+    response = requests.get(
+        url=f'{base_url}/import/{created_import}/citizens')
     assert response.status_code == 200
     citizen_ids = [item['citizen_id'] for item in response.json()['data']]
 
     citizen_id = random.choice(citizen_ids)
-    response = requests.patch(url=f'{base_url}/imports/'
-                                  f'{created_import}/citizens/{citizen_id}',
-                              json=dict(name='new_name'))
+    response = requests.patch(
+        url=f'{base_url}/imports/{created_import}/citizens/{citizen_id}',
+        json={'name': 'new_name'})
     assert response.status_code == 200
     assert response.json()['data']['name'] == 'new_name'
 
 
 def test_update_invalid_birthdate(created_import):
-    response = requests.get(url=f'{base_url}/import/{created_import}/citizens')
+    response = requests.get(
+        url=f'{base_url}/import/{created_import}/citizens')
     assert response.status_code == 200
     citizen_ids = [item['citizen_id'] for item in response.json()['data']]
 
     citizen_id = random.choice(citizen_ids)
-    response = requests.patch(url=f'{base_url}/imports/'
-                                  f'{created_import}/citizens/{citizen_id}',
-                              json=dict(birth_date='31.02.1998'))
+    response = requests.patch(
+        url=f'{base_url}/imports/{created_import}/citizens/{citizen_id}',
+        json={'birth_date': '31.02.1998'})
     assert response.status_code == 400
     assert response.json()['error'] == 'birth_date is not valid'
 
 
 def test_bitrhdays():
-    citizens = list()
-
     may, september = 5, 9
-
-    for i in range(1, 6):
-        citizens.append(
-            dict(
-                citizen_id=i,
-                town='Moscow',
-                street='street_name',
-                building='building_name',
-                apartment=10,
-                name='test_name',
-                birth_date=f'26.{may}.1988',
-                gender='male',
-                relatives=[]
-            )
-        )
+    citizens = [create_default_citizen(
+        citizen_id=i,
+        birth_date=f'26.{may}.1988'
+    ) for i in range(1, 6)]
 
     # input data
     actor = 1
@@ -163,7 +115,8 @@ def test_bitrhdays():
     september_info = [dict(citizen_id=actor,
                            presents=len(citizens[actor - 1]['relatives']))]
 
-    payload = dict(citizens=citizens)
+    # payload = dict(citizens=citizens)
+    payload = {'citizens': citizens}
 
     response = requests.post(url=f'{base_url}/imports', json=payload)
     assert response.status_code == 201
