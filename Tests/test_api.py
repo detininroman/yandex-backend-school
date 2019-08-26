@@ -25,7 +25,7 @@ def test_create_valid():
     assert response.status_code == 201
     import_id = response.json()['data']['import_id']
 
-    response = requests.get(url=f'{base_url}/import/{import_id}/citizens')
+    response = requests.get(url=f'{base_url}/imports/{import_id}/citizens')
     assert response.status_code == 200
     assert response.json()['data'] == payload['citizens']
 
@@ -63,7 +63,7 @@ def test_create_invalid_relatives():
 
 def test_update_valid(created_import):
     response = requests.get(
-        url=f'{base_url}/import/{created_import}/citizens')
+        url=f'{base_url}/imports/{created_import}/citizens')
     assert response.status_code == 200
     citizen_ids = [item['citizen_id'] for item in response.json()['data']]
 
@@ -77,7 +77,7 @@ def test_update_valid(created_import):
 
 def test_update_invalid_birthdate(created_import):
     response = requests.get(
-        url=f'{base_url}/import/{created_import}/citizens')
+        url=f'{base_url}/imports/{created_import}/citizens')
     assert response.status_code == 200
     citizen_ids = [item['citizen_id'] for item in response.json()['data']]
 

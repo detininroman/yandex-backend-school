@@ -146,7 +146,7 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
 
 
 # Task 3
-@app.route('/import/<int:import_id>/citizens', methods=['GET'])
+@app.route('/imports/<int:import_id>/citizens', methods=['GET'])
 def get_citizens(import_id: int) -> (dict, int):
     """Gets list of citizens for particular import.
 
