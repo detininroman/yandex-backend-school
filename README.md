@@ -14,6 +14,7 @@ To run the service:
 
 To run tests:
 ```
+> conda activate
 > cd YandexBackendSchool/
 > cd Tests/
 > pytest
