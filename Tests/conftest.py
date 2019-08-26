@@ -1,10 +1,6 @@
-import os
-import sys
-
 import pytest
 import requests
 
-sys.path.append(os.path.abspath('../'))
 from service.tools import create_default_citizen
 
 base_url = 'http://0.0.0.0:80'
