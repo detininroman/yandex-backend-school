@@ -8,6 +8,10 @@ from service.tools import error, debug
 
 app = Flask(__name__)
 
+host = '0.0.0.0'
+port = 80
+base_url = f'http://{host}:{port}'
+
 
 def get_db():
     db = getattr(g, '_database', None)

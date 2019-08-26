@@ -1,3 +1,5 @@
 from service import app
+from service import host
+from service import port
 
-app.run(host='0.0.0.0', port=80, debug=True, threaded=True)
+app.run(host=host, port=port, debug=True, threaded=True)

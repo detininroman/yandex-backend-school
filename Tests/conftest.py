@@ -1,9 +1,8 @@
 import pytest
 import requests
 
+from service import base_url
 from service.tools import create_default_citizen
-
-base_url = 'http://0.0.0.0:80'
 
 
 @pytest.fixture
