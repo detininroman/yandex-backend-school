@@ -149,7 +149,7 @@ def test_bitrhdays():
     citizens[1]['relatives'] = [1]
     citizens[2]['relatives'] = [1]
     citizens[3]['relatives'] = [1]
-    # expectable result
+    # expected result
     may_info = [
         {'citizen_id': 1, 'presents': len(citizens[0]['relatives'])},
         {'citizen_id': 2, 'presents': len(citizens[1]['relatives'])},
@@ -159,7 +159,7 @@ def test_bitrhdays():
     # input data
     citizens[4]['relatives'] = [5]
     citizens[4]['birth_date'] = f'26.{september}.1988'
-    # expectable result
+    # expected result
     september_info = [{'citizen_id': 5, 'presents': 1}]
 
     payload = dict(citizens=citizens)
