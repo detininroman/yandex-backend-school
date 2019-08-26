@@ -6,7 +6,6 @@ from flask import request
 from sqlitedict import SqliteDict
 
 from service import tools
-from service.tools import error, debug
 
 app = Flask(__name__)
 
@@ -49,7 +48,7 @@ def create_import() -> (dict, int):
     """
     data = request.get_json()
     if not data:
-        return error('invalid json'), 400
+        return tools.error('invalid json'), 400
 
     invalid_payload = tools.validate_payload(data['citizens'])
     if invalid_payload:
@@ -78,7 +77,7 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
     """
     data = request.get_json()
     if not data:
-        return error('invalid json'), 400
+        return tools.error('invalid json'), 400
 
     database = get_db()
 
@@ -86,7 +85,7 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
     try:
         citizens = database[import_id]['citizens']
     except KeyError:
-        return error(f'import {import_id} not found'), 400
+        return tools.error(f'import {import_id} not found'), 400
 
     # find particular citizen and its index
     try:
@@ -94,11 +93,11 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
                    if citizen['citizen_id'] == citizen_id][0]
         index = citizens.index(citizen)
     except IndexError:
-        return error(f'invalid citizen_id: {citizen_id}'), 400
+        return tools.error(f'invalid citizen_id: {citizen_id}'), 400
 
     # forbid citizen_id changing
     if data.get('citizen_id'):
-        return error('citizen_id cannot be changed'), 400
+        return tools.error('citizen_id cannot be changed'), 400
 
     fields_to_update = []
     new_relatives, old_relatives = [], []
@@ -110,7 +109,7 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
             old_relatives = citizen['relatives']
             new_relatives = data['relatives']
             if not len(new_relatives) == len(set(new_relatives)):
-                return error('invalid relatives'), 400
+                return tools.error('invalid relatives'), 400
 
         if data.get(field) is not None:
             fields_to_update.append(field)
@@ -164,7 +163,7 @@ def get_citizens(import_id: int) -> (dict, int):
     try:
         return {'data': database[import_id]['citizens']}, 200
     except KeyError:
-        return error(f'import {import_id} not found'), 400
+        return tools.error(f'import {import_id} not found'), 400
 
 
 # Task 4
@@ -176,7 +175,7 @@ def get_birthdays(import_id):
     try:
         citizens = database[import_id]['citizens']
     except KeyError:
-        return error(f'import {import_id} not found'), 400
+        return tools.error(f'import {import_id} not found'), 400
 
     # create dictionary for output
     months = {key: [] for key in range(1, 12 + 1)}
@@ -214,7 +213,7 @@ def get_statistics(import_id):
     try:
         citizens = database[import_id]['citizens']
     except KeyError:
-        return error(f'import {import_id} not found'), 400
+        return tools.error(f'import {import_id} not found'), 400
 
     # create list of all towns from import
     towns = list(set([citizen['town'] for citizen in citizens]))
@@ -232,7 +231,7 @@ def get_statistics(import_id):
             birth_date = datetime.strptime(citizen['birth_date'], '%d.%m.%Y')
             age = tools.calculate_age(birth_date)
         except ValueError:
-            return error('birth_date is not valid'), 400
+            return tools.error('birth_date is not valid'), 400
 
         # get dict for particular town
         town_statistics = [item for item in data if
