@@ -1,7 +1,6 @@
 import os
 import random
 import sys
-from typing import Dict, List, Any, Union
 
 import requests
 
@@ -12,7 +11,7 @@ base_url = 'http://0.0.0.0:80'
 
 
 def test_create_valid():
-    citizens: List[Dict[str, Union[Union[str, int, List[Any]], Any]]] = []
+    citizens = []
     for i in range(1, 100):
         birth_year = 1950 + i % 50
         citizen = create_default_citizen(
@@ -32,12 +31,12 @@ def test_create_valid():
 
 
 def test_create_invalid_id():
-    citizens = [create_default_citizen(citizen_id='WRONG_CITIZEN_ID')]
+    citizens = [create_default_citizen(citizen_id=-1)]
     payload = {'citizens': citizens}
 
     response = requests.post(url=f'{base_url}/imports', json=payload)
     assert response.status_code == 400
-    assert response.json()['error'] == 'citizen_id name must be int'
+    assert response.json()['error'] == 'citizen_id cannot be negative'
 
 
 def test_create_invalid_street():
