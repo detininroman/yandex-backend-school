@@ -128,8 +128,7 @@ def test_update_invalid_birthdate(created_import):
 def test_bitrhdays():
     citizens = list()
 
-    may = 5
-    september = 9
+    may, september = 5, 9
 
     for i in range(1, 6):
         citizens.append(
@@ -145,12 +144,24 @@ def test_bitrhdays():
                 "relatives": []
             })
 
+    # input data
     citizens[0]['relatives'] = [2, 3, 4]
     citizens[1]['relatives'] = [1]
     citizens[2]['relatives'] = [1]
     citizens[3]['relatives'] = [1]
-    citizens[4]['birth_date'] = f'26.{september}.1988'
+    # expectable result
+    may_info = [
+        {'citizen_id': 1, 'presents': len(citizens[0]['relatives'])},
+        {'citizen_id': 2, 'presents': len(citizens[1]['relatives'])},
+        {'citizen_id': 3, 'presents': len(citizens[2]['relatives'])},
+        {'citizen_id': 4, 'presents': len(citizens[3]['relatives'])}]
+
+    # input data
     citizens[4]['relatives'] = [5]
+    citizens[4]['birth_date'] = f'26.{september}.1988'
+    # expectable result
+    september_info = [{'citizen_id': 5, 'presents': 1}]
+
     payload = dict(citizens=citizens)
 
     response = requests.post(url=f'{base_url}/imports', json=payload)
@@ -159,12 +170,6 @@ def test_bitrhdays():
 
     response = requests.get(url=f'{base_url}/imports/{import_id}/citizens/birthdays')
     assert response.status_code == 200
-    may_info = [
-        {'citizen_id': 1, 'presents': 3},
-        {'citizen_id': 2, 'presents': 1},
-        {'citizen_id': 3, 'presents': 1},
-        {'citizen_id': 4, 'presents': 1}]
-    september_info = [{'citizen_id': 5, 'presents': 1}]
 
     assert response.json()['data'][str(may)] == may_info
     assert response.json()['data'][str(september)] == september_info
