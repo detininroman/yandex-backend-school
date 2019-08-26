@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 def error(arg):
-    return dict(error=arg)
+    return {'error': arg}
 
 
 def calculate_age(born):

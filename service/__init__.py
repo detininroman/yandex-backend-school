@@ -31,7 +31,7 @@ def get_all_imports() -> (dict, int):
     :return: imports and status code.
     """
     database = get_db()
-    return dict(imports=list(database.values())), 200
+    return {'imports': list(database.values())}, 200
 
 
 # Task 1
@@ -57,8 +57,7 @@ def create_import() -> (dict, int):
         import_id = 1
     data['import_id'] = import_id
     database[import_id] = data
-
-    return dict(data=dict(import_id=import_id)), 201
+    return {'data': {'import_id': import_id}}, 201
 
 
 # Task 2
@@ -138,12 +137,12 @@ def update_citizen(import_id: int, citizen_id: int) -> (dict, int):
     if invalid_payload:
         return invalid_payload
 
-    database[import_id] = dict(
-        citizens=citizens,
-        import_id=import_id
-    )
+    database[import_id] = {
+        'citizens': citizens,
+        'import_id': import_id
+    }
 
-    return dict(data=citizen), 200
+    return {'data': citizen}, 200
 
 
 # Task 3
@@ -157,7 +156,7 @@ def get_citizens(import_id: int) -> (dict, int):
     database = get_db()
 
     try:
-        return dict(data=database[import_id]['citizens']), 200
+        return {'data': database[import_id]['citizens']}, 200
     except KeyError:
         return error(f'import {import_id} not found'), 400
 
@@ -190,10 +189,13 @@ def get_birthdays(import_id):
                 giver['presents'] += 1
             except IndexError:
                 # create dict for a particular giver
-                giver = dict(citizen_id=citizen['citizen_id'], presents=1)
+                giver = {
+                    'citizen_id': citizen['citizen_id'],
+                    'presents': 1
+                }
                 months[birthday.month].append(giver)
 
-    return dict(data=months), 200
+    return {'data': months}, 200
 
 
 # Task 5
@@ -211,7 +213,12 @@ def get_statistics(import_id):
     # create list of all towns from import
     towns = list(set([citizen['town'] for citizen in citizens]))
     # create dict for every town
-    data = [dict(town=town, ages=list()) for town in towns]
+    data = [
+        {
+            'town': town,
+            'ages': []
+        } for town in towns
+    ]
 
     for citizen in citizens:
         # calculate age
@@ -236,4 +243,4 @@ def get_statistics(import_id):
         for percent in [50, 75, 99]:
             town_statistics[f'p{percent}'] = tools.percentile(ages, percent)
 
-    return dict(data=data), 200
+    return {'data': data}, 200
