@@ -114,7 +114,6 @@ def test_bitrhdays():
     september_info = [dict(citizen_id=actor,
                            presents=len(citizens[actor - 1]['relatives']))]
 
-    # payload = dict(citizens=citizens)
     payload = {'citizens': citizens}
 
     response = requests.post(url=f'{base_url}/imports', json=payload)
