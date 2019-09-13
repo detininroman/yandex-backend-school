@@ -1,4 +1,4 @@
-# Yandex Backend School
+# yandex backend school
 
 Used frameworks and technologies:
 * Flask
@@ -7,7 +7,7 @@ Used frameworks and technologies:
 
 To run the service:
 ```
-> cd YandexBackendSchool/
+> cd yandex-backend-school/
 > docker-compose build
 > docker-compose up
 ```
@@ -15,7 +15,7 @@ To run the service:
 To run tests:
 ```
 > conda activate
-> cd YandexBackendSchool/
+> cd yandex-backend-school/
 > cd Tests/
 > pytest
 ```
